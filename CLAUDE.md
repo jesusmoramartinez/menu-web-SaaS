@@ -26,18 +26,15 @@ entornos en `docs/deploy.md` — en particular, **nunca `npm run db:push` contra
 variantes, mesas/QR, personal e invitaciones, configuración) operan sobre datos reales; el tenant demo
 (`/demo/*`, incluido `/demo/admin`) funciona sin login para mostrar las cuatro vistas a un prospecto. La app es
 instalable como **PWA**, mozo/cocina tienen aviso sonoro + vibración y la cocina tiene Wake Lock + pantalla
-completa para tablets. Hay CI (`.github/workflows/ci.yml`) y docs de operación en `docs/` (`deploy.md`,
-`alta-restaurante.md`, `manual-mozo-cocina.md`). Cualquier acción sobre el proyecto de **producción** (migrar,
-borrar un restaurante, cambiar Auth/SMTP) requiere decisión y credenciales del usuario: no se hace desde acá sin
-que lo pida explícitamente. Las próximas funcionalidades (sin plan todavía) están listadas en
-[`docs/nuevas-funcionalidades.md`](docs/nuevas-funcionalidades.md).
-`alta-restaurante.md`, `manual-mozo-cocina.md`, `continuidad-proyecto.md` — guía paso a paso para el usuario,
-sin asumir conocimientos previos, sobre cómo pedir cambios y cómo dar de alta/vender a un cliente nuevo).
-**Pendiente real, fuera de código:** crear el proyecto Supabase
-de producción y migrar Vercel a esas credenciales antes de dar de alta el primer cliente real (ver
-`docs/deploy.md`) — mientras compartan proyecto, el `pg_cron` de `reset_demo()` y el tenant "Bar de Prueba" del
-seed corren sobre la misma base que sirve la demo pública. Son acciones externas que requieren decisión y
-credenciales del usuario, no se hacen desde acá sin que lo pida explícitamente.
+completa para tablets. Hay CI (`.github/workflows/ci.yml`) y docs de operación en `docs/`: `deploy.md`,
+`alta-restaurante.md`, `manual-mozo-cocina.md` y `continuidad-proyecto.md` (guía paso a paso para el usuario, sin
+asumir conocimientos previos, sobre cómo pedir cambios y cómo dar de alta/vender a un cliente nuevo). Cualquier
+acción sobre el proyecto de **producción** (migrar, borrar un restaurante, cambiar Auth/SMTP) requiere decisión y
+credenciales del usuario: no se hace desde acá sin que lo pida explícitamente.
+Las próximas funcionalidades están listadas en [`docs/nuevas-funcionalidades.md`](docs/nuevas-funcionalidades.md)
+(el *qué*) y planificadas en [`docs/plan-v1.1-funcionalidades.md`](docs/plan-v1.1-funcionalidades.md),
+[`docs/plan-mercadopago.md`](docs/plan-mercadopago.md) y [`docs/plan-ui-ux.md`](docs/plan-ui-ux.md) (el *cómo*);
+ninguno implementado todavía.
 
 ## 2. Stack
 
