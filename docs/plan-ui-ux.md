@@ -101,9 +101,22 @@ La conclusión incómoda: hoy **las cuatro vistas están diseñadas para el prim
 
 ---
 
-## 3. Fase 1 — Cimientos (sin cambio visual aparente)
+## 3. Fase 1 — Cimientos (sin cambio visual aparente) ✅ IMPLEMENTADA (2026-10-03)
 
 Nada de esto se "ve" en una captura, pero todas las fases siguientes dependen de que exista. Es una tanda corta.
+
+> **Estado:** hecha, con dos desvíos respecto de lo planificado:
+> - **3.5 (`useMoney()`) quedó afuera:** depende de una decisión sin resolver (usar `restaurant.locale` o
+>   sacarlo, decisión 2 del plan de v1.1) y toca ~17 call sites. Va con el bloque 0.2 de v1.1, donde vive esa
+>   decisión.
+> - **El contraste (3.3) se corrigió en menos lugares que los 33 medidos:** al revisar uno por uno, varios
+>   `text-stone-400` estaban sobre fondo oscuro (`bg-stone-900`), donde dan ~7:1 y **no** eran un problema —
+>   el total de la cuenta en `MyOrders`, la etiqueta "Demo" de `DemoBar` y el nombre/rol en `StaffTopBar`. Se
+>   corrigieron los que estaban sobre fondo claro y se subieron a `stone-300` los de cocina (que se leen de
+>   lejos). El diagnóstico de §1.3 contaba ocurrencias, no casos reales: queda anotado como lección para los
+>   próximos conteos.
+>
+> Las reglas resultantes ya están en `CLAUDE.md` §6 (ver §10 de este doc).
 
 ### 3.1 Tokens en `src/index.css`
 

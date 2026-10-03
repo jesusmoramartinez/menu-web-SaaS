@@ -118,7 +118,7 @@ export function OptionGroupEditor({ restaurantId, menuItemId }: OptionGroupEdito
                     <button
                       type="button"
                       onClick={() => m.saveOption.mutate({ id: o.id, groupId: g.id, name: o.name, priceDelta: o.priceDelta, isAvailable: !o.isAvailable, sortOrder: 0 })}
-                      className={`rounded-lg px-2 py-1 text-xs font-semibold ${o.isAvailable ? 'text-emerald-700' : 'text-stone-400'}`}
+                      className={`rounded-lg px-2 py-1 text-xs font-semibold ${o.isAvailable ? 'text-emerald-700' : 'text-stone-500'}`}
                     >
                       {o.isAvailable ? 'Disponible' : 'Agotada'}
                     </button>

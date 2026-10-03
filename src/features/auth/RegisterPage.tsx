@@ -226,7 +226,7 @@ export default function RegisterPage() {
             <label className="block">
               <span className="text-sm font-semibold">Dirección (para el QR)</span>
               <div className="mt-1 flex items-center overflow-hidden rounded-xl border border-stone-200 bg-white focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/20">
-                <span className="pl-3 text-sm text-stone-400">/r/</span>
+                <span className="pl-3 text-sm text-stone-500">/r/</span>
                 <input
                   required
                   value={slug}
@@ -277,7 +277,7 @@ export default function RegisterPage() {
             Iniciá sesión
           </Link>
         </p>
-        <p className="mt-2 text-center text-xs text-stone-400">
+        <p className="mt-2 text-center text-xs text-stone-500">
           <Link to="/" className="hover:underline">
             ← Volver al inicio
           </Link>

@@ -65,14 +65,14 @@ export default function WaiterView() {
   return (
     <div className="min-h-dvh">
       <header className="border-b border-stone-200 bg-white">
-        <div className="mx-auto flex max-w-6xl items-start justify-between px-4 py-4">
+        <div className="mx-auto flex max-w-staff items-start justify-between px-4 py-4">
           <div>
             <h1 className="text-xl font-bold">Panel del Mozo</h1>
             <p className="text-sm text-stone-500">{restaurant.name} · llamados de mesa y comandas</p>
           </div>
           <SoundToggle enabled={sound.enabled} onToggle={sound.toggle} />
         </div>
-        <div className="mx-auto max-w-6xl px-4 pb-3">
+        <div className="mx-auto max-w-staff px-4 pb-3">
           <div className="flex gap-1 rounded-xl bg-stone-200/70 p-1" role="tablist" aria-label="Secciones">
             <TabButton active={tab === 'pedidos'} onClick={() => setTab('pedidos')} icon={<Inbox size={16} />}>
               Pedidos
@@ -84,7 +84,7 @@ export default function WaiterView() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl space-y-8 px-4 py-5">
+      <main className="mx-auto max-w-staff space-y-8 px-4 py-5">
         {assigned && (
           <label className="flex items-center justify-end gap-2 text-sm text-stone-600">
             <input type="checkbox" checked={showAll} onChange={(e) => setShowAll(e.target.checked)} className="h-4 w-4 accent-brand-500" />

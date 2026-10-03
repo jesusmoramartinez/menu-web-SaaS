@@ -19,7 +19,7 @@ export function StaffTopBar({ staff, restaurant }: { staff: Staff; restaurant: R
 
   return (
     <div className="sticky top-0 z-40 bg-stone-900 text-white shadow-md">
-      <div className="mx-auto flex max-w-6xl items-center gap-3 px-3 py-2">
+      <div className="mx-auto flex max-w-staff items-center gap-3 px-3 py-2">
         <div className="hidden min-w-0 items-center gap-2 sm:flex">
           {restaurant.logoUrl ? (
             <img src={restaurant.logoUrl} alt="" className="h-8 w-8 shrink-0 rounded-lg bg-white/90 object-cover" />
@@ -70,7 +70,7 @@ export function StaffTopBar({ staff, restaurant }: { staff: Staff; restaurant: R
           disabled={logout.isPending}
           title="Cerrar sesión"
           aria-label="Cerrar sesión"
-          className="rounded-lg p-2 text-stone-400 transition hover:bg-stone-800 hover:text-white disabled:opacity-50"
+          className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-lg text-stone-300 transition hover:bg-stone-800 hover:text-white disabled:opacity-50"
         >
           <LogOut size={16} />
         </button>

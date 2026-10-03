@@ -16,8 +16,8 @@ export function SoundToggle({ enabled, onToggle, dark }: SoundToggleProps) {
       title={enabled ? 'Silenciar avisos' : 'Activar avisos sonoros'}
       aria-label={enabled ? 'Silenciar avisos' : 'Activar avisos sonoros'}
       aria-pressed={enabled}
-      className={`rounded-lg p-2 transition ${
-        dark ? 'text-stone-400 hover:bg-stone-800 hover:text-white' : 'text-stone-400 hover:bg-stone-100 hover:text-stone-700'
+      className={`flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-lg transition ${
+        dark ? 'text-stone-300 hover:bg-stone-800 hover:text-white' : 'text-stone-500 hover:bg-stone-100 hover:text-stone-700'
       }`}
     >
       {enabled ? <Volume2 size={18} /> : <VolumeX size={18} />}

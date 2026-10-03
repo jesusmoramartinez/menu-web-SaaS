@@ -89,7 +89,7 @@ export default function LoginPage() {
             Registrate
           </Link>
         </p>
-        <p className="mt-2 text-center text-xs text-stone-400">
+        <p className="mt-2 text-center text-xs text-stone-600">
           <Link to="/" className="hover:underline">
             ← Volver al inicio
           </Link>

@@ -81,16 +81,22 @@ export function Sheet({ open, onClose, title, subtitle, icon, children, footer }
         <button
           type="button"
           onClick={onClose}
-          className="rounded-full p-2 text-stone-500 hover:bg-stone-100"
+          className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full text-stone-500 hover:bg-stone-100"
           aria-label="Cerrar"
         >
           <X size={20} />
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-5 py-4">{children}</div>
+      {/* El pie (o el cuerpo, si no hay pie) respeta el área segura de abajo: en un iPhone
+          con barra de gestos, sin esto el botón principal queda debajo del indicador de inicio. */}
+      <div className={`flex-1 overflow-y-auto px-5 pt-4 ${footer ? 'pb-4' : 'pb-[max(1rem,env(safe-area-inset-bottom))]'}`}>
+        {children}
+      </div>
 
-      {footer && <div className="border-t border-stone-200 px-5 py-4">{footer}</div>}
+      {footer && (
+        <div className="border-t border-stone-200 px-5 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]">{footer}</div>
+      )}
     </Modal>
   )
 }

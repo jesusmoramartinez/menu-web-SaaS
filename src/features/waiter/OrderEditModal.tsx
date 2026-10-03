@@ -128,7 +128,7 @@ export function OrderEditModal({ order, restaurantId, currency, onClose }: Order
 
                 <label className="relative mt-2 block">
                   <span className="sr-only">Notas para {i.name}</span>
-                  <MessageSquare size={14} className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-stone-400" aria-hidden="true" />
+                  <MessageSquare size={14} className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-stone-500" aria-hidden="true" />
                   <input
                     type="text"
                     value={i.notes}

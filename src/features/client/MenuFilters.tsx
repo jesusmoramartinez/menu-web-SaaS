@@ -15,10 +15,10 @@ interface MenuFiltersProps {
 /** Buscador + chips de categoría (el contenedor sticky lo pone la vista). */
 export function MenuFilters({ categories, category, onCategory, query, onQuery }: MenuFiltersProps) {
   return (
-    <div className="mx-auto max-w-3xl px-4 py-3">
+    <div className="mx-auto max-w-client px-4 py-3">
       <label className="relative block">
         <span className="sr-only">Buscar platos</span>
-        <Search size={18} className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-stone-400" aria-hidden="true" />
+        <Search size={18} className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-stone-500" aria-hidden="true" />
         <input
           type="search"
           value={query}
@@ -30,7 +30,7 @@ export function MenuFilters({ categories, category, onCategory, query, onQuery }
           <button
             type="button"
             onClick={() => onQuery('')}
-            className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full p-1 text-stone-400 hover:bg-stone-100"
+            className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full p-1 text-stone-500 hover:bg-stone-100"
             aria-label="Limpiar búsqueda"
           >
             <X size={16} />

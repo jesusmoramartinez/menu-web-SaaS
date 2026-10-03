@@ -136,7 +136,7 @@ export default function ClientView() {
       ) : (
         <>
           <div className="sticky top-[var(--topbar-h,0px)] z-30 border-b border-stone-200 bg-stone-100/95 backdrop-blur">
-            <div className="mx-auto max-w-3xl px-4 pt-3">
+            <div className="mx-auto max-w-client px-4 pt-3">
               <div className="flex gap-1 rounded-xl bg-stone-200/70 p-1" role="tablist" aria-label="Secciones">
                 <TabButton active={tab === 'menu'} onClick={() => setTab('menu')} icon={<UtensilsCrossed size={16} />}>
                   Menú
@@ -153,7 +153,7 @@ export default function ClientView() {
           </div>
 
           {tab === 'menu' ? (
-            <main className="mx-auto max-w-3xl px-4 py-4">
+            <main className="mx-auto max-w-client px-4 py-4">
               {menu.isPending ? (
                 <MenuSkeleton />
               ) : menu.isError ? (
@@ -165,7 +165,7 @@ export default function ClientView() {
                   <section key={g.id} className="mb-6" aria-labelledby={`cat-${g.id}`}>
                     <h2 id={`cat-${g.id}`} className="mb-3 flex items-center gap-2 text-lg font-bold">
                       {g.emoji && <span aria-hidden="true">{g.emoji}</span>} {g.name}
-                      <span className="text-sm font-normal text-stone-400">({g.items.length})</span>
+                      <span className="text-sm font-normal text-stone-600">({g.items.length})</span>
                     </h2>
                     <div className="grid gap-3 sm:grid-cols-2">
                       {g.items.map((item) => (
@@ -197,7 +197,7 @@ export default function ClientView() {
           <button
             type="button"
             onClick={() => setCartOpen(true)}
-            className="mx-auto flex w-full max-w-3xl items-center justify-between rounded-2xl bg-stone-900 px-5 py-3.5 text-white shadow-2xl transition active:scale-[0.98] animate-slide-up"
+            className="mx-auto flex w-full max-w-client items-center justify-between rounded-2xl bg-stone-900 px-5 py-3.5 text-white shadow-2xl transition active:scale-[0.98] animate-slide-up"
           >
             <span className="flex items-center gap-3">
               <span className="relative">

@@ -63,8 +63,8 @@ export default function AdminStaffPage() {
                 <li key={s.id} className="rounded-xl bg-white ring-1 ring-stone-200/70">
                   <div className="flex flex-wrap items-center gap-2 p-3">
                     <div className="min-w-0 flex-1">
-                      <p className={`font-semibold ${s.isActive ? '' : 'text-stone-400 line-through'}`}>
-                        {s.displayName} {isSelf && <span className="text-xs font-normal text-stone-400">(vos)</span>}
+                      <p className={`font-semibold ${s.isActive ? '' : 'text-stone-500 line-through'}`}>
+                        {s.displayName} {isSelf && <span className="text-xs font-normal text-stone-500">(vos)</span>}
                       </p>
                     </div>
                     {s.role === 'owner' ? (
@@ -151,8 +151,8 @@ export default function AdminStaffPage() {
               <li key={i.id} className="flex flex-wrap items-center gap-2 rounded-xl bg-white p-2.5 text-sm ring-1 ring-stone-200/70">
                 <span className="font-mono font-bold">{i.code}</span>
                 <span className="text-stone-500">{ROLE_LABEL[i.role]}</span>
-                {i.email && <span className="text-stone-400">{i.email}</span>}
-                <span className="ml-auto text-xs text-stone-400">
+                {i.email && <span className="text-stone-500">{i.email}</span>}
+                <span className="ml-auto text-xs text-stone-500">
                   {i.usedAt ? (
                     <span className="flex items-center gap-1 text-emerald-600">
                       <Check size={12} /> Usado

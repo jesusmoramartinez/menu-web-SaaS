@@ -41,7 +41,7 @@ export function DemoBar() {
 
   return (
     <div className="sticky top-0 z-40 bg-stone-900 text-white shadow-md">
-      <div className="mx-auto flex max-w-6xl items-center gap-2 px-3 py-2">
+      <div className="mx-auto flex max-w-staff items-center gap-2 px-3 py-2">
         <span className="hidden text-xs font-semibold uppercase tracking-wider text-stone-400 sm:block">Demo</span>
 
         <nav className="flex flex-1 gap-1 rounded-xl bg-stone-800 p-1" aria-label="Vistas de la demo">
@@ -77,7 +77,7 @@ export function DemoBar() {
           disabled={reset.isPending}
           title="Reiniciar demo"
           aria-label="Reiniciar demo"
-          className="rounded-lg p-2 text-stone-400 transition hover:bg-stone-800 hover:text-white disabled:opacity-50"
+          className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-lg text-stone-300 transition hover:bg-stone-800 hover:text-white disabled:opacity-50"
         >
           <RotateCcw size={16} className={reset.isPending ? 'animate-spin' : ''} />
         </button>

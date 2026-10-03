@@ -79,7 +79,7 @@ function TableCard({ table, currency, now, onClose, closing }: { table: TableOve
           </Button>
         </>
       ) : (
-        <p className="mt-4 text-sm text-stone-400">Sin comensales</p>
+        <p className="mt-4 text-sm text-stone-500">Sin comensales</p>
       )}
     </article>
   )
