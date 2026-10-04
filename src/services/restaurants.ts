@@ -8,7 +8,6 @@ export interface RestaurantRowLike {
   tagline: string | null
   logo_url: string | null
   currency: string
-  locale: string
   theme: unknown
   is_demo: boolean
   created_at?: string
@@ -23,7 +22,6 @@ export function toRestaurant(r: RestaurantRowLike): Restaurant {
     tagline: r.tagline,
     logoUrl: r.logo_url,
     currency: r.currency,
-    locale: r.locale,
     theme,
     isDemo: r.is_demo,
     createdAt: r.created_at,
@@ -34,7 +32,7 @@ export function toRestaurant(r: RestaurantRowLike): Restaurant {
 export async function fetchRestaurantBySlug(slug: string): Promise<Restaurant | null> {
   const { data, error } = await supabase
     .from('restaurants')
-    .select('id, slug, name, tagline, logo_url, currency, locale, theme, is_demo, created_at')
+    .select('id, slug, name, tagline, logo_url, currency, theme, is_demo, created_at')
     .eq('slug', slug)
     .maybeSingle()
   if (error) throw error

@@ -1,8 +1,10 @@
-import { DoorOpen, Receipt, Table2 } from 'lucide-react'
+import { DoorOpen, Receipt, Table2, Users } from 'lucide-react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { formatPrice, timeAgo } from '@/lib/format'
 import type { TableOverview } from '@/types/domain'
+import { TableBillSheet } from './TableBillSheet'
 
 interface TablesOverviewProps {
   tables: TableOverview[]
@@ -45,6 +47,7 @@ export function TablesOverview({ tables, currency, now, onClose, closing }: Tabl
 function TableCard({ table, currency, now, onClose, closing }: { table: TableOverview } & Omit<TablesOverviewProps, 'tables'>) {
   const open = table.sessionId !== null
   const billRequested = table.sessionStatus === 'bill_requested'
+  const [billOpen, setBillOpen] = useState(false)
 
   return (
     <article
@@ -64,19 +67,31 @@ function TableCard({ table, currency, now, onClose, closing }: { table: TableOve
 
       {open ? (
         <>
-          <p className="mt-1 text-xs text-stone-500">Desde {timeAgo(new Date(table.openedAt as string).getTime(), now)}</p>
+          <p className="mt-1 flex items-center gap-2 text-xs text-stone-500">
+            <span>Desde {timeAgo(new Date(table.openedAt as string).getTime(), now)}</span>
+            {table.guests !== null && (
+              <span className="flex items-center gap-1">
+                <Users size={12} aria-hidden="true" /> {table.guests}
+              </span>
+            )}
+          </p>
           <p className="mt-2 text-xl font-bold">{formatPrice(table.total, currency)}</p>
-          <Button
-            variant="secondary"
-            size="sm"
-            full
-            className="mt-3"
-            disabled={!table.canClose || closing}
-            title={table.canClose ? undefined : 'Hay pedidos sin entregar en esta mesa'}
-            onClick={() => onClose(table.sessionId as string)}
-          >
-            Cerrar mesa
-          </Button>
+          <div className="mt-3 flex gap-2">
+            <Button variant="secondary" size="sm" className="flex-1" onClick={() => setBillOpen(true)}>
+              Cuenta
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              className="flex-1"
+              disabled={!table.canClose || closing}
+              title={table.canClose ? undefined : 'Hay pedidos sin entregar en esta mesa'}
+              onClick={() => onClose(table.sessionId as string)}
+            >
+              Cerrar mesa
+            </Button>
+          </div>
+          {billOpen && <TableBillSheet table={table} currency={currency} onClose={() => setBillOpen(false)} />}
         </>
       ) : (
         <p className="mt-4 text-sm text-stone-500">Sin comensales</p>

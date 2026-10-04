@@ -30,6 +30,7 @@ interface TableOverviewRow {
   session_id: string | null
   session_status: SessionStatus | null
   opened_at: string | null
+  guests: number | null
   total: number
   can_close: boolean
 }
@@ -56,6 +57,7 @@ export async function fetchTablesOverview(restaurantId: string): Promise<TableOv
     sessionId: t.session_id,
     sessionStatus: t.session_status,
     openedAt: t.opened_at,
+    guests: t.guests,
     total: t.total,
     canClose: t.can_close,
   }))

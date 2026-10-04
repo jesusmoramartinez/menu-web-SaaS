@@ -11,6 +11,7 @@ export const qk = {
   activeOrders: (restaurantId: string) => ['staff', restaurantId, 'orders'] as const,
   openAlerts: (restaurantId: string) => ['staff', restaurantId, 'alerts'] as const,
   tablesOverview: (restaurantId: string) => ['staff', restaurantId, 'tables'] as const,
+  sessionCharges: (sessionId: string) => ['staff', 'session-charges', sessionId] as const,
   myStaff: (userId: string) => ['my-staff', userId] as const,
   myAssignments: (staffId: string) => ['my-assignments', staffId] as const,
 
@@ -23,4 +24,5 @@ export const qk = {
   staffList: (restaurantId: string) => ['admin', restaurantId, 'staff-list'] as const,
   invites: (restaurantId: string) => ['admin', restaurantId, 'invites'] as const,
   allAssignments: (restaurantId: string) => ['admin', restaurantId, 'assignments'] as const,
+  serviceCharges: (restaurantId: string) => ['admin', restaurantId, 'service-charges'] as const,
 }

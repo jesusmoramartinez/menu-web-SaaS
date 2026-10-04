@@ -350,7 +350,21 @@ las RPCs de suspensión/reactivación.
 
 ---
 
-## Bloque 3 — Totales de la mesa: cargos fijos y ajustes (B6 + C1)
+## Bloque 3 — Totales de la mesa: cargos fijos y ajustes (B6 + C1) ✅ IMPLEMENTADO (2026-10-04)
+
+> **Estado:** hecho. `session_totals()` quedó como única fuente de verdad y la usan `get_session_state` y
+> `get_tables_overview`; un check de `db:verify` confirma que los tres devuelven el mismo número.
+> Catálogo de cargos en `/admin/configuracion`, hoja de "Cuenta" por mesa en el panel del mozo
+> (comensales + switches de cargos + ajustes), y desglose en "La cuenta" del comensal — que **sólo aparece
+> si hay cargos o ajustes**: si no, mostrar subtotal y total iguales confunde.
+>
+> **Decisiones tomadas al implementar:**
+> - Los porcentajes se guardan en **puntos básicos** (1000 = 10,00 %), para admitir un 10,5 % sin decimales rotos.
+> - El `total` nunca baja de 0, aunque los descuentos superen el consumo.
+> - La regla "descuentos sólo owner/admin" vive en la **política RLS** (`amount > 0 or can_manage(...)`), no en
+>   un CHECK: depende del rol de quien escribe, que un CHECK no conoce.
+> - El importe de un cargo lo congela el servidor al aplicarlo (`set_session_charge` lee el catálogo); el
+>   navegador nunca manda importes, igual que con los precios en `place_order`.
 
 Este bloque **es el prerrequisito de Mercado Pago**: define cuál es el importe a cobrar y de dónde sale.
 
@@ -627,7 +641,7 @@ Específico de este plan:
 | # | Decisión | Bloque | Recomendación |
 |---|---|---|---|
 | 1 | Zona horaria: `timestamptz` con corte a las 06:00 vs. fecha local | 0.1 | `timestamptz` |
-| 2 | `locale`: usarlo o sacarlo | 0.2 | Usarlo si se piensa vender fuera de AR; si no, sacarlo del tipo |
+| 2 | ~~`locale`: usarlo o sacarlo~~ | 0.2 | **Resuelto (2026-10-04): sacarlo.** Fuera del tipo `Restaurant` y de los selects; la columna queda en la base por si algún día se vende fuera de Argentina |
 | 3 | Dominio propio: apex o subdominio | 1.1 | Decidir **antes** de imprimir QR nuevos |
 | 4 | ~~¿El menú sigue visible con el restaurante suspendido?~~ | 2.1 | **Resuelto:** `read_only` (visible, sin pedir) → a los 7 días `suspended` (oculto), con cron diario |
 | 5 | ¿Quién carga la cantidad de comensales? | 3 | El mozo |

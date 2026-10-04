@@ -221,13 +221,13 @@ src/
 
 ## 5b. Base de datos (Supabase) — `supabase/migrations/`
 
-Migraciones aplicadas (orden): `000100_schema` → `000200_functions` → `000300_policies` → `000400_demo_seed_fn` → `000500_demo_data_and_cron` → `000600_close_session` → `000700_fix_can_operate_null` → `20260918000100_storage_media` → `20260918000200_confirm_cron` (idempotente: confirma/programa el job `reset-demo` de pg_cron si no existía) → `20261004000100_sold_out_timezone` → `20261004000200_tables_overview`.
+Migraciones aplicadas (orden): `000100_schema` → `000200_functions` → `000300_policies` → `000400_demo_seed_fn` → `000500_demo_data_and_cron` → `000600_close_session` → `000700_fix_can_operate_null` → `20260918000100_storage_media` → `20260918000200_confirm_cron` (idempotente: confirma/programa el job `reset-demo` de pg_cron si no existía) → `20261004000100_sold_out_timezone` → `20261004000200_tables_overview` → `20261004000300_session_totals`.
 `supabase/seed.sql` sólo crea el tenant privado **"Bar de Prueba"** (`bar-prueba`, tokens `prueba-mesa-01/02`) para tests de aislamiento; no va a producción.
 
 **Tablas** (todas con `restaurant_id` y RLS): `restaurants`, `sectors`, `tables` (token del QR), `staff` (id = auth.users.id, rol owner/admin/waiter/kitchen),
 `staff_invites` (código canjeable, single-use), `waiter_assignments` (sector **o** mesa), `categories`, `menu_items` (`price` centavos, `is_available`, `sold_out_until` **timestamptz**: instante hasta el que está agotado),
 `option_groups` (single/multiple, required, min/max), `options` (`price_delta`), `table_sessions` (una abierta por mesa: open → bill_requested → closed),
-`orders` (pending → kitchen → ready → delivered | cancelled; `total` lo mantiene un trigger), `order_items` (snapshots de nombre/precio, `selected_options` jsonb, `line_total` generado), `alerts` (una abierta por mesa y tipo).
+`orders` (pending → kitchen → ready → delivered | cancelled; `total` lo mantiene un trigger), `order_items` (snapshots de nombre/precio, `selected_options` jsonb, `line_total` generado), `alerts` (una abierta por mesa y tipo), `service_charges` (catálogo de cargos fijos del restaurante), `session_charges` (los aplicados a una mesa, con snapshot de nombre e importe), `session_adjustments` (ajustes del mozo; negativos = descuento).
 
 **RPCs** (`security definer`, el cliente anónimo sólo escribe a través de ellas):
 - `get_table_by_token(p_token)` → restaurante + mesa + sesión abierta (o `null`).
@@ -236,7 +236,9 @@ Migraciones aplicadas (orden): `000100_schema` → `000200_functions` → `00030
 - `get_session_state(p_session_id)` → sesión, mesa, pedidos con ítems, alertas abiertas y total (el uuid de sesión es la capacidad del comensal).
 - `join_restaurant(p_code, p_display_name?)`, `create_restaurant(p_name, p_slug)` (autenticado; errores `NOT_AUTHENTICATED`, `ALREADY_STAFF`, `INVITE_INVALID`, `INVITE_EMAIL_MISMATCH`, `SLUG_INVALID`, `SLUG_TAKEN`).
 - `set_item_sold_out(p_menu_item_id, p_sold_out)` → timestamptz | null. Marca "agotado hoy" calculando el instante en el servidor con `restaurants.timezone`: el **próximo 06:00 local**, para que el corte caiga de madrugada y nunca en pleno servicio. `security invoker`: las políticas `can_manage` de `menu_items` deciden; si RLS no deja, lanza `NOT_AUTHORIZED`.
-- `get_tables_overview(p_restaurant_id)` → una fila por mesa con sector, sesión abierta, total y `can_close`, calculado en la base (`security invoker`, RLS manda). Reemplaza la versión que bajaba todos los pedidos del restaurante al cliente.
+- `session_totals(p_session_id)` → `{subtotal, guests, charges[], adjustments[], total}`. **Única fuente de verdad del total de una mesa**: la usan `get_session_state` y `get_tables_overview`, así que comensal, mozo y (en v2) el cobro ven siempre el mismo número. Porcentajes en **puntos básicos** (1000 = 10,00 %); el total nunca baja de 0.
+- `set_session_charge(p_session_id, p_charge_id, p_applied)`: aplica/saca un cargo de una mesa congelando nombre e importe **desde el catálogo, en el servidor** — el navegador nunca manda importes, igual que con los precios en `place_order`. Los cargos **no se aplican solos**: los activa el mozo mesa por mesa (el cubierto se perdona seguido). Los ajustes negativos los limita la política RLS (`amount > 0 or can_manage(...)`), no un CHECK, porque dependen del rol.
+- `get_tables_overview(p_restaurant_id)` → una fila por mesa con sector, sesión abierta, comensales, total (vía `session_totals`) y `can_close`, calculado en la base (`security invoker`, RLS manda). Reemplaza la versión que bajaba todos los pedidos del restaurante al cliente.
 - `close_table_session(p_session_id)` (Fase 3, staff): cierra la mesa, resuelve sus alertas abiertas. Idempotente si ya estaba cerrada. Errores: `SESSION_NOT_FOUND`, `NOT_AUTHORIZED`, `SESSION_HAS_ACTIVE_ORDERS`.
 - `reset_demo()` (público) recrea el tenant demo; `seed_demo()` es interna. pg_cron intenta correr `reset_demo()` cada hora (`reset-demo`); confirmar en el dashboard → Integrations → Cron.
 

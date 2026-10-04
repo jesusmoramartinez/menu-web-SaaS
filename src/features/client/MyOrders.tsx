@@ -83,11 +83,39 @@ export function MyOrders({ hasSession, state, isPending, error, currency, billRe
       )}
 
       <section className="rounded-2xl bg-stone-900 p-4 text-white" aria-labelledby="bill-title">
-        <div className="flex items-center justify-between">
-          <h2 id="bill-title" className="flex items-center gap-2 font-bold">
-            <Receipt size={18} aria-hidden="true" /> La cuenta
-          </h2>
-          <span className="text-2xl font-bold">{formatPrice(state.total, currency)}</span>
+        <h2 id="bill-title" className="flex items-center gap-2 font-bold">
+          <Receipt size={18} aria-hidden="true" /> La cuenta
+        </h2>
+
+        {/* Desglose: sólo aparece si el restaurante aplicó cargos o ajustes a esta mesa.
+            Sin eso, el total es el subtotal y mostrar dos líneas iguales confunde. */}
+        {(state.charges.length > 0 || state.adjustments.length > 0) && (
+          <dl className="mt-3 space-y-1 border-b border-stone-700 pb-3 text-sm">
+            <div className="flex items-center justify-between gap-3">
+              <dt className="text-stone-300">Consumo</dt>
+              <dd className="tabular-nums">{formatPrice(state.subtotal, currency)}</dd>
+            </div>
+            {state.charges.map((c) => (
+              <div key={c.id} className="flex items-center justify-between gap-3">
+                <dt className="truncate text-stone-300">{c.name}</dt>
+                <dd className="tabular-nums">{formatPrice(c.amount, currency)}</dd>
+              </div>
+            ))}
+            {state.adjustments.map((a) => (
+              <div key={a.id} className="flex items-center justify-between gap-3">
+                <dt className="truncate text-stone-300">{a.reason}</dt>
+                <dd className="tabular-nums">
+                  {a.amount < 0 ? '− ' : ''}
+                  {formatPrice(Math.abs(a.amount), currency)}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        )}
+
+        <div className="mt-3 flex items-center justify-between gap-3">
+          <span className="font-semibold">Total</span>
+          <span className="text-2xl font-bold tabular-nums">{formatPrice(state.total, currency)}</span>
         </div>
         <p className="mt-1 text-xs text-stone-400">
           {active.length} {active.length === 1 ? 'pedido' : 'pedidos'} en esta mesa · se paga en el local

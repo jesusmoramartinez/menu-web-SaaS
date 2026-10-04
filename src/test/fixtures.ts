@@ -7,7 +7,6 @@ export const demoRestaurant: Restaurant = {
   tagline: 'Horno de leña desde 1987',
   logoUrl: null,
   currency: 'ARS',
-  locale: 'es-AR',
   theme: { brand: '#f97316' },
   isDemo: true,
 }
@@ -20,7 +19,6 @@ export const ownerRestaurant: Restaurant = {
   tagline: null,
   logoUrl: null,
   currency: 'ARS',
-  locale: 'es-AR',
   theme: {},
   isDemo: false,
 }
@@ -35,6 +33,7 @@ export const tablesOverview: TableOverview[] = [
     sessionId: 'sess-3',
     sessionStatus: 'bill_requested',
     openedAt: new Date(Date.now() - 40 * 60_000).toISOString(),
+    guests: 2,
     total: 220000,
     canClose: true, // pidió la cuenta y ya no tiene pedidos activos: se puede cerrar
   },
@@ -47,6 +46,7 @@ export const tablesOverview: TableOverview[] = [
     sessionId: 'sess-5',
     sessionStatus: 'open',
     openedAt: new Date(Date.now() - 20 * 60_000).toISOString(),
+    guests: 4,
     total: 450000,
     canClose: false, // todavía tiene un pedido activo
   },
@@ -139,6 +139,9 @@ export const sessionAfterOrder: SessionState = {
     },
   ],
   openAlerts: [],
+  subtotal: 980000,
+  charges: [],
+  adjustments: [],
   total: 980000,
 }
 

@@ -459,6 +459,153 @@ export type Database = {
           },
         ]
       }
+      service_charges: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          is_active: boolean
+          mode: Database["public"]["Enums"]["charge_mode"]
+          name: string
+          restaurant_id: string
+          sort_order: number
+          suggested: boolean
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          mode: Database["public"]["Enums"]["charge_mode"]
+          name: string
+          restaurant_id: string
+          sort_order?: number
+          suggested?: boolean
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          mode?: Database["public"]["Enums"]["charge_mode"]
+          name?: string
+          restaurant_id?: string
+          sort_order?: number
+          suggested?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_charges_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      session_adjustments: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          id: string
+          reason: string
+          restaurant_id: string
+          session_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          reason: string
+          restaurant_id: string
+          session_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          reason?: string
+          restaurant_id?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_adjustments_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_adjustments_session_id_restaurant_id_fkey"
+            columns: ["session_id", "restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "table_sessions"
+            referencedColumns: ["id", "restaurant_id"]
+          },
+        ]
+      }
+      session_charges: {
+        Row: {
+          amount: number
+          applied_at: string
+          applied_by: string | null
+          charge_id: string | null
+          id: string
+          mode: Database["public"]["Enums"]["charge_mode"]
+          name_snapshot: string
+          restaurant_id: string
+          session_id: string
+        }
+        Insert: {
+          amount: number
+          applied_at?: string
+          applied_by?: string | null
+          charge_id?: string | null
+          id?: string
+          mode: Database["public"]["Enums"]["charge_mode"]
+          name_snapshot: string
+          restaurant_id: string
+          session_id: string
+        }
+        Update: {
+          amount?: number
+          applied_at?: string
+          applied_by?: string | null
+          charge_id?: string | null
+          id?: string
+          mode?: Database["public"]["Enums"]["charge_mode"]
+          name_snapshot?: string
+          restaurant_id?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_charges_charge_id_fkey"
+            columns: ["charge_id"]
+            isOneToOne: false
+            referencedRelation: "service_charges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_charges_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_charges_session_id_restaurant_id_fkey"
+            columns: ["session_id", "restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "table_sessions"
+            referencedColumns: ["id", "restaurant_id"]
+          },
+        ]
+      }
       staff: {
         Row: {
           created_at: string
@@ -545,6 +692,7 @@ export type Database = {
         Row: {
           closed_at: string | null
           closed_by: string | null
+          guests: number | null
           id: string
           opened_at: string
           restaurant_id: string
@@ -554,6 +702,7 @@ export type Database = {
         Insert: {
           closed_at?: string | null
           closed_by?: string | null
+          guests?: number | null
           id?: string
           opened_at?: string
           restaurant_id: string
@@ -563,6 +712,7 @@ export type Database = {
         Update: {
           closed_at?: string | null
           closed_by?: string | null
+          guests?: number | null
           id?: string
           opened_at?: string
           restaurant_id?: string
@@ -731,13 +881,19 @@ export type Database = {
       }
       reset_demo: { Args: never; Returns: undefined }
       seed_demo: { Args: never; Returns: undefined }
+      session_totals: { Args: { p_session_id: string }; Returns: Json }
       set_item_sold_out: {
         Args: { p_menu_item_id: string; p_sold_out: boolean }
         Returns: string
       }
+      set_session_charge: {
+        Args: { p_applied: boolean; p_charge_id: string; p_session_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       alert_type: "waiter" | "bill"
+      charge_mode: "per_person" | "per_table" | "percent"
       option_selection: "single" | "multiple"
       order_status: "pending" | "kitchen" | "ready" | "delivered" | "cancelled"
       session_status: "open" | "bill_requested" | "closed"
@@ -870,6 +1026,7 @@ export const Constants = {
   public: {
     Enums: {
       alert_type: ["waiter", "bill"],
+      charge_mode: ["per_person", "per_table", "percent"],
       option_selection: ["single", "multiple"],
       order_status: ["pending", "kitchen", "ready", "delivered", "cancelled"],
       session_status: ["open", "bill_requested", "closed"],

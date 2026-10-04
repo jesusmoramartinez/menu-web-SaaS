@@ -9,6 +9,7 @@ export type AlertType = Database['public']['Enums']['alert_type']
 export type SessionStatus = Database['public']['Enums']['session_status']
 export type OptionSelection = Database['public']['Enums']['option_selection']
 export type StaffRole = Database['public']['Enums']['staff_role']
+export type ChargeMode = Database['public']['Enums']['charge_mode']
 
 export type ToastTone = 'success' | 'info' | 'error'
 
@@ -20,7 +21,9 @@ export interface Restaurant {
   tagline: string | null
   logoUrl: string | null
   currency: string
-  locale: string
+  // No hay `locale`: la columna existe en la base pero no la usaba nadie (todos los
+  // `formatPrice` pasaban sólo la moneda), así que era configuración muerta. Ver
+  // `docs/plan-v1.1-funcionalidades.md` §0.2.
   /** color de marca (hex) y otras preferencias visuales */
   theme: { brand?: string }
   isDemo: boolean
@@ -81,7 +84,7 @@ export interface MenuItem {
   price: number
   imageUrl: string | null
   tags: string[]
-  /** agotado hoy (sold_out_until >= hoy) */
+  /** agotado: `sold_out_until` (un instante) todavía no pasó — ver lib/soldOut.ts */
   soldOut: boolean
   optionGroups: OptionGroup[]
 }
@@ -139,11 +142,44 @@ export interface OpenAlert {
   createdAt: string
 }
 
+/** Cargo fijo del catálogo del restaurante (cubierto, servicio de mesa…). */
+export interface ServiceCharge {
+  id: string
+  name: string
+  mode: ChargeMode
+  /** centavos en per_person/per_table; puntos básicos en percent (1000 = 10,00 %) */
+  amount: number
+  isActive: boolean
+  /** se le ofrece al mozo ya marcado al abrir la mesa */
+  suggested: boolean
+  sortOrder: number
+}
+
+/** Un cargo tal como quedó aplicado a una mesa: el importe ya resuelto en centavos. */
+export interface AppliedCharge {
+  id: string
+  name: string
+  amount: number
+}
+
+export interface SessionAdjustment {
+  id: string
+  /** puede ser negativo (descuento) */
+  amount: number
+  reason: string
+  createdAt: string
+}
+
 export interface SessionState {
   session: { id: string; status: SessionStatus; openedAt: string; closedAt: string | null }
   table: { id: string; number: number; label: string | null }
   orders: SessionOrder[]
   openAlerts: OpenAlert[]
+  /** sólo los pedidos, sin cargos ni ajustes */
+  subtotal: number
+  charges: AppliedCharge[]
+  adjustments: SessionAdjustment[]
+  /** subtotal + cargos + ajustes, calculado por el servidor (`session_totals`) */
   total: number
 }
 
@@ -214,8 +250,10 @@ export interface TableOverview {
   sessionId: string | null
   sessionStatus: SessionStatus | null
   openedAt: string | null
-  /** suma de pedidos no cancelados de la sesión abierta */
+  /** total de la mesa ya con cargos y ajustes (`session_totals`) */
   total: number
+  /** cuántos comensales cargó el mozo (null = sin cargar; el cubierto asume 1) */
+  guests: number | null
   /** true si no hay pedidos pending/kitchen/ready en la sesión: se puede cerrar */
   canClose: boolean
 }
