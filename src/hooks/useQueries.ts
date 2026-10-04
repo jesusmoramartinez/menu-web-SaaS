@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { qk } from '@/lib/queryKeys'
 import { fetchOpenAlerts } from '@/services/alerts'
+import { fetchServiceCharges, fetchSessionChargeIds } from '@/services/charges'
 import { fetchMenu } from '@/services/menu'
 import { fetchActiveOrders, fetchSessionState } from '@/services/orders'
 import { subscribeToRestaurant } from '@/services/realtime'
@@ -67,6 +68,23 @@ export function useTablesOverview(restaurantId: string) {
     queryKey: qk.tablesOverview(restaurantId),
     queryFn: () => fetchTablesOverview(restaurantId),
     refetchInterval: 15_000,
+  })
+}
+
+/** Catálogo de cargos fijos del restaurante (cubierto, servicio de mesa…). */
+export function useServiceCharges(restaurantId: string) {
+  return useQuery({
+    queryKey: qk.serviceCharges(restaurantId),
+    queryFn: () => fetchServiceCharges(restaurantId),
+  })
+}
+
+/** Qué cargos del catálogo están aplicados a una mesa (ids del catálogo). */
+export function useSessionChargeIds(sessionId: string | null) {
+  return useQuery({
+    queryKey: qk.sessionCharges(sessionId ?? 'none'),
+    queryFn: () => fetchSessionChargeIds(sessionId as string),
+    enabled: !!sessionId,
   })
 }
 

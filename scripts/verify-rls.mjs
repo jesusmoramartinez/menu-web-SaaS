@@ -29,6 +29,7 @@ const BAR_PULPO_AGOTADO = '00000000-0000-4000-8000-00000000f043'
 const BAR_OPT_MEDIA = '00000000-0000-4000-8000-00000000f061'
 const BAR_OPT_ENTERA = '00000000-0000-4000-8000-00000000f062'
 const DEMO_PIZZA_MUZZA = '00000000-0000-4000-8000-000000000405' // demo_uuid(4, 5)
+const DEMO_EMPANADA = '00000000-0000-4000-8000-000000000402' // demo_uuid(4, 2) — sin grupos de opciones
 
 let failed = 0
 const results = []
@@ -265,6 +266,94 @@ await check('join_restaurant / create_restaurant exigen sesión', async () => {
   const e1 = await rpcError('join_restaurant', { p_code: 'ABC' })
   const e2 = await rpcError('create_restaurant', { p_name: 'X', p_slug: 'xxx' })
   assert(e1?.includes('NOT_AUTHENTICATED') && e2?.includes('NOT_AUTHENTICATED'), `${e1} / ${e2}`)
+})
+
+// ── 5. Cargos fijos, ajustes y session_totals (bloque 3) ──────────────────
+// Se hacen sobre el tenant demo, donde anon administra. reset_demo() los limpia.
+await check('session_totals: cubierto por persona, porcentaje y ajuste negativo', async () => {
+  const table = await rpc('get_table_by_token', { p_token: 'demo-mesa-02' })
+  // Un pedido para tener subtotal
+  const order = await rpc('place_order', {
+    p_token: 'demo-mesa-02',
+    p_items: [{ menu_item_id: DEMO_EMPANADA, qty: 4 }],
+  })
+  const sessionId = order.session_id
+  assert(order.total > 0, 'el pedido no sumó nada')
+
+  // 4 comensales en la mesa
+  const { error: gErr } = await anon.from('table_sessions').update({ guests: 4 }).eq('id', sessionId)
+  assert(!gErr, `no pude setear guests: ${gErr?.message}`)
+
+  // Catálogo: cubierto por persona + 10% de servicio
+  const { data: charges, error: cErr } = await anon
+    .from('service_charges')
+    .insert([
+      { restaurant_id: table.restaurant.id, name: 'Cubierto', mode: 'per_person', amount: 50000 },
+      { restaurant_id: table.restaurant.id, name: 'Servicio', mode: 'percent', amount: 1000 },
+    ])
+    .select('id, mode')
+  assert(!cErr, `no pude crear los cargos: ${cErr?.message}`)
+
+  try {
+    for (const c of charges) {
+      await rpc('set_session_charge', { p_session_id: sessionId, p_charge_id: c.id, p_applied: true })
+    }
+    // Un descuento
+    const { error: aErr } = await anon
+      .from('session_adjustments')
+      .insert({ restaurant_id: table.restaurant.id, session_id: sessionId, amount: -12345, reason: 'Descuento de prueba' })
+    assert(!aErr, `no pude cargar el ajuste: ${aErr?.message}`)
+
+    // El subtotal sale de la propia función: la mesa del demo puede tener más pedidos.
+    const t = await rpc('session_totals', { p_session_id: sessionId })
+    const cubierto = 50000 * 4
+    const servicio = Math.round((t.subtotal * 1000) / 10000)
+    const esperado = t.subtotal + cubierto + servicio - 12345
+
+    assert(t.guests === 4, `guests=${t.guests}`)
+    assert(t.subtotal >= order.total, `el subtotal (${t.subtotal}) no incluye el pedido (${order.total})`)
+    assert(t.charges.length === 2, `esperaba 2 cargos, vinieron ${t.charges.length}`)
+    assert(t.adjustments.length === 1, `esperaba 1 ajuste, vinieron ${t.adjustments.length}`)
+    assert(t.total === esperado, `total ${t.total} != ${esperado}`)
+
+    // get_session_state tiene que devolver EXACTAMENTE lo mismo (una sola fuente de verdad)
+    const st = await rpc('get_session_state', { p_session_id: sessionId })
+    assert(st.total === esperado, `get_session_state.total ${st.total} != ${esperado}`)
+    assert(st.subtotal === t.subtotal, `get_session_state.subtotal ${st.subtotal} != ${t.subtotal}`)
+
+    // y el panel de Mesas del mozo, también
+    const mesas = await rpc('get_tables_overview', { p_restaurant_id: table.restaurant.id })
+    const mesa = mesas.find((m) => m.session_id === sessionId)
+    assert(mesa?.total === esperado, `get_tables_overview.total ${mesa?.total} != ${esperado}`)
+
+    // Sacar el cubierto lo descuenta del total
+    const perPerson = charges.find((c) => c.mode === 'per_person')
+    await rpc('set_session_charge', { p_session_id: sessionId, p_charge_id: perPerson.id, p_applied: false })
+    const t2 = await rpc('session_totals', { p_session_id: sessionId })
+    assert(t2.total === esperado - cubierto, `al sacar el cubierto: ${t2.total} != ${esperado - cubierto}`)
+  } finally {
+    await anon.from('service_charges').delete().in('id', charges.map((c) => c.id))
+  }
+})
+
+await check('un cargo de otro restaurante no se puede aplicar a esta mesa', async () => {
+  const order = await rpc('place_order', { p_token: 'demo-mesa-03', p_items: [{ menu_item_id: DEMO_EMPANADA, qty: 1 }] })
+  const err = await rpcError('set_session_charge', {
+    p_session_id: order.session_id,
+    p_charge_id: '00000000-0000-4000-8000-0000000000ff', // no existe en el demo
+    p_applied: true,
+  })
+  assert(err?.includes('CHARGE_NOT_FOUND'), `esperaba CHARGE_NOT_FOUND, vino ${err}`)
+})
+
+await check('anon NO ve ni escribe cargos/ajustes de un tenant privado', async () => {
+  const { data: cat } = await anon.from('service_charges').select('id').eq('restaurant_id', BAR_RID)
+  assert((cat ?? []).length === 0, 'anon ve el catálogo de cargos de bar-prueba')
+
+  const { error } = await anon
+    .from('service_charges')
+    .insert({ restaurant_id: BAR_RID, name: 'Colado', mode: 'per_table', amount: 1 })
+  assert(error, 'anon pudo crear un cargo en bar-prueba')
 })
 
 // Nota: la sesión del tenant privado queda abierta (anon no puede cerrarla; el staff lo hará en Fase 3).

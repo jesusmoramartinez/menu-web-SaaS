@@ -68,6 +68,9 @@ interface SessionStatePayload {
     }[]
   }[]
   open_alerts: { id: string; type: SessionState['openAlerts'][number]['type']; created_at: string }[]
+  subtotal: number
+  charges: { id: string; name: string; amount: number }[]
+  adjustments: { id: string; amount: number; reason: string; created_at: string }[]
   total: number
 }
 
@@ -100,6 +103,9 @@ export async function fetchSessionState(sessionId: string): Promise<SessionState
     table: p.table,
     orders,
     openAlerts: p.open_alerts.map((a) => ({ id: a.id, type: a.type, createdAt: a.created_at })),
+    subtotal: p.subtotal,
+    charges: p.charges ?? [],
+    adjustments: (p.adjustments ?? []).map((a) => ({ id: a.id, amount: a.amount, reason: a.reason, createdAt: a.created_at })),
     total: p.total,
   }
 }
