@@ -75,7 +75,28 @@ para alguien de más de 45 años — es decir, exactamente el público del mozo 
 - **Tamaños de letra sueltos** tipo `text-[10px]` / `text-[11px]` en badges y etiquetas, por fuera de cualquier
   escala.
 
-### 1.5 Lo que ya está bien y no hay que tocar
+### 1.5 Scroll horizontal: la página entera se movía de costado (resuelto en la Fase 1)
+
+Medido con `scripts/check-overflow.mjs` (`npm run check:overflow`) contra el dev server: **todas** las rutas
+`/demo/*` tenían un `scrollWidth` de **409px fijo**, así que en cualquier teléfono de menos de 412px la página
+se desplazaba en horizontal — el síntoma que se ve como una banda blanca al costado o el contenido cortado.
+Tres causas independientes:
+
+| Dónde | Causa | Arreglo |
+|---|---|---|
+| `DemoBar` (rompía las 4 rutas de la demo) | Las 4 pestañas con texto + el botón de reinicio necesitan 409px y no se encogen | Etiquetas sólo desde `xs` (420px); debajo quedan los íconos, con `title`/`aria-label`. Y `flex-auto` en vez de `flex-1`: `flex-1` reparte ancho **igual** y cortaba "Cliente" aunque hubiera lugar |
+| `KitchenView` (cabecera) | El grupo de contadores + controles no envolvía | `flex-wrap` y separadores sólo desde `xs` |
+| `/demo/admin` ("Agregar") | Un `<input class="flex-1">` **no se encoge por debajo de su ancho intrínseco** (~20 caracteres) y empujaba al botón afuera | `min-width: 0` global para `input`/`select`/`textarea` en `index.css` — mata toda la clase de bug, presente y futura |
+
+Dos aprendizajes que quedaron como regla en `CLAUDE.md` §6:
+
+- **No se arregla con `overflow-x: hidden` en `body`.** Esconde el síntoma y, peor, rompe los `position: sticky`
+  de las barras superiores y los filtros, que esta app usa en todas las vistas.
+- **No se detecta leyendo el código.** El desborde depende del ancho intrínseco del texto y de los campos, que
+  sale de la fuente y del contenido real. Por eso quedó un script, al lado de los `db:verify*` y por el mismo
+  motivo: hay bugs que sólo aparecen midiendo.
+
+### 1.6 Lo que ya está bien y no hay que tocar
 
 Para que el plan no rompa lo que funciona: `EmptyState`, `Skeleton` (`MenuSkeleton`/`CardsSkeleton`),
 `ErrorState`, `OfflineBanner`, `ToastProvider` y `Modal`/`Sheet` con `useFocusTrap` ya cubren estados vacíos, de
@@ -117,6 +138,10 @@ Nada de esto se "ve" en una captura, pero todas las fases siguientes dependen de
 >   próximos conteos.
 >
 > Las reglas resultantes ya están en `CLAUDE.md` §6 (ver §10 de este doc).
+>
+> **Se sumó algo que no estaba planificado: scroll horizontal.** Al revisar en un navegador real
+> aparecieron tres desbordes que hacían que la página entera se moviera de costado en celulares
+> (la "barra blanca" al costado / la web cortada). Ver §1.5.
 
 ### 3.1 Tokens en `src/index.css`
 
@@ -289,6 +314,9 @@ contenido más que de código.
 
 **Antes de empezar, tomar la medición base; al cerrar cada fase, repetirla.**
 
+0. **Scroll horizontal, automático:** `npm run check:overflow` (con `npm run dev` levantado) recorre 7 rutas ×
+   5 anchos y falla con el detalle de los elementos culpables. Es lo primero que hay que correr ante cualquier
+   cambio de layout — ver §1.5.
 1. **Matriz de viewports** en las DevTools (device toolbar), recorriendo las cuatro vistas en cada uno:
 
 | Ancho | Representa | Qué se mira |

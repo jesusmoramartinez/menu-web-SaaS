@@ -55,13 +55,15 @@ export default function KitchenView() {
               <p className="text-xs text-stone-300">KDS · {restaurant.name}</p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="flex gap-5 text-right">
+          {/* flex-wrap también acá: en una tablet angosta los contadores + los controles no
+              caben en una línea y empujaban la página (scroll horizontal). */}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <div className="flex gap-4 text-right xs:gap-5">
               <Stat icon={Flame} value={inKitchen.length} label="comandas" />
               <Stat value={plates} label="platos" />
               <Stat icon={CheckCircle2} value={readyCount} label="por entregar" muted />
             </div>
-            <div className="flex gap-1 border-l border-stone-700 pl-4">
+            <div className="flex gap-1 border-stone-700 xs:border-l xs:pl-4">
               <SoundToggle enabled={sound.enabled} onToggle={sound.toggle} dark />
               {fullscreen.supported && (
                 <button

@@ -23,6 +23,11 @@
   --text-4xl: calc(2.25rem * var(--font-scale));
   --text-5xl: calc(3rem * var(--font-scale));
 
+  /* Breakpoint extra para celulares angostos: `sm` (640px) es demasiado tarde para decidir
+     entre ícono solo e ícono + texto en las barras de navegación. 420px es donde medimos que
+     las 4 pestañas de la demo dejan de caber. */
+  --breakpoint-xs: 26.25rem;
+
   /* Ancho del contenido por rol (genera max-w-client, max-w-staff, …). Cada vista usa
      el suyo en vez de un max-w-* suelto, para que cambiarlo sea un solo lugar. */
   --container-client: 48rem; /* comensal: una carta no se lee mejor más ancha */
@@ -44,6 +49,18 @@ html {
 
 body {
   @apply bg-stone-100 text-stone-900 antialiased;
+}
+
+@layer base {
+  /* Los campos de formulario traen un ancho intrínseco (~20 caracteres) y, como hijos de un
+     flex, se niegan a encogerse por debajo de él: con `flex-1` en un input, el botón de al
+     lado terminaba empujado fuera del viewport y aparecía scroll horizontal en pantallas
+     angostas. Con min-width:0 manda el `flex-1`. No afecta a los inputs fuera de un flex. */
+  input,
+  select,
+  textarea {
+    min-width: 0;
+  }
 }
 
 /* Ocultar scrollbar horizontal de las categorías */
