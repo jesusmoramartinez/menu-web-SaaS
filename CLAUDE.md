@@ -57,7 +57,7 @@ npm test            # vitest run
 npm run lint        # oxlint
 npm run build       # tsc -b && vite build (falla si hay errores de tipos)
 
-npm run db:push         # supabase db push --linked --include-seed  (migraciones + supabase/seed.sql)
+npm run db:push         # supabase db push --linked --include-seed  (migraciones; ver nota del seed)
 npm run db:types        # regenera src/types/database.ts desde el proyecto (correr tras cada migración)
 npm run db:verify       # node scripts/verify-rls.mjs — 21 checks de RLS/RPC con la anon key
 npm run db:verify:staff # node scripts/verify-staff-ops.mjs — 7 checks de close_table_session y aislamiento por tenant
@@ -65,6 +65,12 @@ npm run db:verify:staff # node scripts/verify-staff-ops.mjs — 7 checks de clos
 npm run check:overflow  # node scripts/check-overflow.mjs — scroll horizontal en 7 rutas × 5 anchos
                         # (necesita `npm run dev` levantado y un Chromium instalado)
 ```
+
+> **`supabase/seed.sql` NO se aplica con `db:push` contra un proyecto remoto** (comprobado el 2026-10-04:
+> el CLI imprime "Updating seed hash" y lista el seed, pero sólo registra el hash; los datos quedan como estaban).
+> El seed corre de verdad con `supabase db reset` en local. El tenant **"Bar de Prueba"** de dev se sembró una vez
+> a mano y queda congelado: si se cambia `seed.sql`, hay que replicar el cambio con un `update` en el **SQL Editor
+> del proyecto de dev**, o el fixture y el archivo se desincronizan y `db:verify` falla por una razón que no es un bug.
 
 > **Storage** (Fase 5): bucket público `restaurant-media` (`supabase/migrations/20260918000100_storage_media.sql`),
 > ruta `<restaurantId>/<logo|menu>/<archivo>`. RLS de `storage.objects` autoriza escritura con
@@ -215,11 +221,11 @@ src/
 
 ## 5b. Base de datos (Supabase) — `supabase/migrations/`
 
-Migraciones aplicadas (orden): `000100_schema` → `000200_functions` → `000300_policies` → `000400_demo_seed_fn` → `000500_demo_data_and_cron` → `000600_close_session` → `000700_fix_can_operate_null` → `20260918000100_storage_media` → `20260918000200_confirm_cron` (idempotente: confirma/programa el job `reset-demo` de pg_cron si no existía).
+Migraciones aplicadas (orden): `000100_schema` → `000200_functions` → `000300_policies` → `000400_demo_seed_fn` → `000500_demo_data_and_cron` → `000600_close_session` → `000700_fix_can_operate_null` → `20260918000100_storage_media` → `20260918000200_confirm_cron` (idempotente: confirma/programa el job `reset-demo` de pg_cron si no existía) → `20261004000100_sold_out_timezone` → `20261004000200_tables_overview`.
 `supabase/seed.sql` sólo crea el tenant privado **"Bar de Prueba"** (`bar-prueba`, tokens `prueba-mesa-01/02`) para tests de aislamiento; no va a producción.
 
 **Tablas** (todas con `restaurant_id` y RLS): `restaurants`, `sectors`, `tables` (token del QR), `staff` (id = auth.users.id, rol owner/admin/waiter/kitchen),
-`staff_invites` (código canjeable, single-use), `waiter_assignments` (sector **o** mesa), `categories`, `menu_items` (`price` centavos, `is_available`, `sold_out_until`),
+`staff_invites` (código canjeable, single-use), `waiter_assignments` (sector **o** mesa), `categories`, `menu_items` (`price` centavos, `is_available`, `sold_out_until` **timestamptz**: instante hasta el que está agotado),
 `option_groups` (single/multiple, required, min/max), `options` (`price_delta`), `table_sessions` (una abierta por mesa: open → bill_requested → closed),
 `orders` (pending → kitchen → ready → delivered | cancelled; `total` lo mantiene un trigger), `order_items` (snapshots de nombre/precio, `selected_options` jsonb, `line_total` generado), `alerts` (una abierta por mesa y tipo).
 
@@ -229,6 +235,8 @@ Migraciones aplicadas (orden): `000100_schema` → `000200_functions` → `00030
 - `create_alert(p_token, p_type)` → `{alert_id, session_id, created}` (idempotente; `bill` pasa la sesión a `bill_requested`).
 - `get_session_state(p_session_id)` → sesión, mesa, pedidos con ítems, alertas abiertas y total (el uuid de sesión es la capacidad del comensal).
 - `join_restaurant(p_code, p_display_name?)`, `create_restaurant(p_name, p_slug)` (autenticado; errores `NOT_AUTHENTICATED`, `ALREADY_STAFF`, `INVITE_INVALID`, `INVITE_EMAIL_MISMATCH`, `SLUG_INVALID`, `SLUG_TAKEN`).
+- `set_item_sold_out(p_menu_item_id, p_sold_out)` → timestamptz | null. Marca "agotado hoy" calculando el instante en el servidor con `restaurants.timezone`: el **próximo 06:00 local**, para que el corte caiga de madrugada y nunca en pleno servicio. `security invoker`: las políticas `can_manage` de `menu_items` deciden; si RLS no deja, lanza `NOT_AUTHORIZED`.
+- `get_tables_overview(p_restaurant_id)` → una fila por mesa con sector, sesión abierta, total y `can_close`, calculado en la base (`security invoker`, RLS manda). Reemplaza la versión que bajaba todos los pedidos del restaurante al cliente.
 - `close_table_session(p_session_id)` (Fase 3, staff): cierra la mesa, resuelve sus alertas abiertas. Idempotente si ya estaba cerrada. Errores: `SESSION_NOT_FOUND`, `NOT_AUTHORIZED`, `SESSION_HAS_ACTIVE_ORDERS`.
 - `reset_demo()` (público) recrea el tenant demo; `seed_demo()` es interna. pg_cron intenta correr `reset_demo()` cada hora (`reset-demo`); confirmar en el dashboard → Integrations → Cron.
 
@@ -298,6 +306,7 @@ Cualquier función de autorización nueva (booleana, usada en `if not ... then r
 - **Tests:** utilidades y reducers con tests unitarios; vistas con smoke vía `createMemoryRouter(routes)`. Ejecutar `npm test` antes de commitear.
 - **Auth:** nunca `supabase.auth.*` directo en un componente — pasa por `services/auth.ts` y `useAuth()`. Guards de ruta (`StaffLayout`) devuelven UI (`<Navigate>` o mensaje), nunca lanzan.
 - **SQL de autorización:** toda función `boolean` para `if not fn(...) then raise` va con `coalesce(..., false)` (ver §5b) — verificarlo con `db:verify:staff`, no alcanza con leerlo.
+- **Nada de fechas para decidir "hoy".** Postgres en Supabase corre en **UTC**, así que `current_date` cambia a las **21:00 hora argentina**, en pleno servicio; y `new Date().toISOString().slice(0,10)` en el navegador tiene el mismo problema. Un `date` que significa "hasta hoy" se desmarca solo a las 21:00. Guardar **instantes** (`timestamptz`) y comparar con `now()` / `Date.now()`; si hace falta un límite de día, calcularlo en el servidor con `restaurants.timezone` (ver `set_item_sold_out`, migración `20261004000100`). El corte se pone a las **06:00 locales**, no a medianoche: un bar que cierra a las 3 AM sigue en servicio a las 00:00.
 
 ## 7. Roadmap (ver `docs/plan-producto.md`)
 

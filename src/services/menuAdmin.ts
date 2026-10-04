@@ -131,10 +131,14 @@ export async function setItemAvailable(id: string, isAvailable: boolean): Promis
   if (error) throw error
 }
 
-/** "Agotado hoy": pone sold_out_until en la fecha de hoy (se limpia solo al día siguiente) o lo quita. */
+/**
+ * "Agotado hoy": el **servidor** calcula hasta cuándo, usando la zona horaria del
+ * restaurante (el próximo 06:00 local), para que el corte caiga de madrugada y nunca en
+ * medio del servicio. Es la única operación del admin que no es CRUD directo: necesita
+ * una cuenta con zona horaria que no corresponde hacer en el navegador.
+ */
 export async function setSoldOutToday(id: string, soldOut: boolean): Promise<void> {
-  const value = soldOut ? new Date().toISOString().slice(0, 10) : null
-  const { error } = await supabase.from('menu_items').update({ sold_out_until: value }).eq('id', id)
+  const { error } = await supabase.rpc('set_item_sold_out', { p_menu_item_id: id, p_sold_out: soldOut })
   if (error) throw error
 }
 

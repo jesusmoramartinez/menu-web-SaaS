@@ -1,8 +1,6 @@
+import { isSoldOut } from '@/lib/soldOut'
 import { supabase } from '@/lib/supabase'
 import type { Category, Menu, MenuItem, OptionGroup, OptionSelection } from '@/types/domain'
-
-/** Fecha de hoy en UTC (misma referencia que `current_date` en la base). */
-const todayISO = () => new Date().toISOString().slice(0, 10)
 
 export const bySort = <T extends { sort_order: number }>(a: T, b: T) => a.sort_order - b.sort_order
 
@@ -48,7 +46,7 @@ export const toGroup = (g: GroupRow): OptionGroup => ({
     .map((o) => ({ id: o.id, name: o.name, priceDelta: o.price_delta, isAvailable: o.is_available })),
 })
 
-const toItem = (i: ItemRow, today: string): MenuItem => ({
+const toItem = (i: ItemRow, now: number): MenuItem => ({
   id: i.id,
   categoryId: i.category_id,
   name: i.name,
@@ -56,7 +54,7 @@ const toItem = (i: ItemRow, today: string): MenuItem => ({
   price: i.price,
   imageUrl: i.image_url,
   tags: i.tags ?? [],
-  soldOut: i.sold_out_until !== null && i.sold_out_until >= today,
+  soldOut: isSoldOut(i.sold_out_until, now),
   optionGroups: [...i.option_groups].sort(bySort).map(toGroup),
 })
 
@@ -83,7 +81,7 @@ export async function fetchMenu(restaurantId: string): Promise<Menu> {
   if (cats.error) throw cats.error
   if (items.error) throw items.error
 
-  const today = todayISO()
+  const now = Date.now()
   const categories: Category[] = cats.data.map((c) => ({ id: c.id, name: c.name, emoji: c.emoji, sortOrder: c.sort_order }))
-  return { categories, items: (items.data as unknown as ItemRow[]).map((i) => toItem(i, today)) }
+  return { categories, items: (items.data as unknown as ItemRow[]).map((i) => toItem(i, now)) }
 }

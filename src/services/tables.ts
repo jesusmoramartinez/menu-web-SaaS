@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase'
-import type { OrderStatus, SessionStatus, TableContext, TableOverview } from '@/types/domain'
+import type { SessionStatus, TableContext, TableOverview } from '@/types/domain'
 import { toRestaurant, type RestaurantRowLike } from './restaurants'
 
 interface TableByTokenPayload {
@@ -21,71 +21,44 @@ export async function fetchTableByToken(token: string): Promise<TableContext | n
   }
 }
 
-const ACTIVE_ORDER_STATUSES: OrderStatus[] = ['pending', 'kitchen', 'ready']
-
-interface TableRow {
+interface TableOverviewRow {
   id: string
   number: number
   label: string | null
   sector_id: string | null
-  sectors: { name: string } | null
-}
-interface SessionRow {
-  id: string
-  table_id: string
-  status: SessionStatus
-  opened_at: string
-}
-interface OrderTotalRow {
-  session_id: string
-  status: OrderStatus
+  sector_name: string | null
+  session_id: string | null
+  session_status: SessionStatus | null
+  opened_at: string | null
   total: number
+  can_close: boolean
 }
 
 /**
  * Panorama de mesas para la pestaña "Mesas" del mozo: todas las mesas del
  * restaurante con su sector, si tienen sesión abierta, el total acumulado y
  * si se pueden cerrar (sin pedidos pending/kitchen/ready).
+ *
+ * Lo calcula la base (`get_tables_overview`) y vuelve una fila por mesa. Antes se
+ * armaba acá descargando **todos** los pedidos no cancelados del restaurante, sin
+ * ventana temporal, cada 15 segundos: a los pocos meses eran miles de filas por
+ * refresco en el teléfono del mozo.
  */
 export async function fetchTablesOverview(restaurantId: string): Promise<TableOverview[]> {
-  const [tablesRes, sessionsRes, ordersRes] = await Promise.all([
-    supabase.from('tables').select('id, number, label, sector_id, sectors(name)').eq('restaurant_id', restaurantId).eq('is_active', true),
-    supabase.from('table_sessions').select('id, table_id, status, opened_at').eq('restaurant_id', restaurantId).neq('status', 'closed'),
-    supabase.from('orders').select('session_id, status, total').eq('restaurant_id', restaurantId).neq('status', 'cancelled'),
-  ])
-  if (tablesRes.error) throw tablesRes.error
-  if (sessionsRes.error) throw sessionsRes.error
-  if (ordersRes.error) throw ordersRes.error
-
-  const sessionByTable = new Map<string, SessionRow>()
-  for (const s of sessionsRes.data as SessionRow[]) sessionByTable.set(s.table_id, s)
-
-  const totalsBySession = new Map<string, { total: number; hasActive: boolean }>()
-  for (const o of ordersRes.data as OrderTotalRow[]) {
-    const acc = totalsBySession.get(o.session_id) ?? { total: 0, hasActive: false }
-    acc.total += o.total
-    if (ACTIVE_ORDER_STATUSES.includes(o.status)) acc.hasActive = true
-    totalsBySession.set(o.session_id, acc)
-  }
-
-  return (tablesRes.data as TableRow[])
-    .map((t) => {
-      const session = sessionByTable.get(t.id) ?? null
-      const totals = session ? (totalsBySession.get(session.id) ?? { total: 0, hasActive: false }) : null
-      return {
-        id: t.id,
-        number: t.number,
-        label: t.label,
-        sectorId: t.sector_id,
-        sectorName: t.sectors?.name ?? null,
-        sessionId: session?.id ?? null,
-        sessionStatus: session?.status ?? null,
-        openedAt: session?.opened_at ?? null,
-        total: totals?.total ?? 0,
-        canClose: session ? !totals?.hasActive : false,
-      } satisfies TableOverview
-    })
-    .sort((a, b) => a.number - b.number)
+  const { data, error } = await supabase.rpc('get_tables_overview', { p_restaurant_id: restaurantId })
+  if (error) throw error
+  return (data as unknown as TableOverviewRow[]).map((t) => ({
+    id: t.id,
+    number: t.number,
+    label: t.label,
+    sectorId: t.sector_id,
+    sectorName: t.sector_name,
+    sessionId: t.session_id,
+    sessionStatus: t.session_status,
+    openedAt: t.opened_at,
+    total: t.total,
+    canClose: t.can_close,
+  }))
 }
 
 export async function closeTableSession(sessionId: string): Promise<void> {

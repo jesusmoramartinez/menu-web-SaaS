@@ -28,7 +28,11 @@ begin
   insert into public.menu_items (id, restaurant_id, category_id, name, description, price, sold_out_until) values
     ('00000000-0000-4000-8000-00000000f041', r_id, c_id, 'Tortilla de papas', 'Porción', 350000, null),
     ('00000000-0000-4000-8000-00000000f042', r_id, c_id, 'Croquetas de jamón', 'x6',     420000, null),
-    ('00000000-0000-4000-8000-00000000f043', r_id, c_id, 'Pulpo a la gallega', 'Agotado hoy', 990000, current_date);
+    -- `sold_out_until` es un INSTANTE ("agotado hasta"), no una fecha: ver la migración
+    -- 20261004000100_sold_out_timezone.sql. Una semana por delante lo deja agotado sin
+    -- importar cuándo corra el seed ni cuánto tiempo pase hasta el próximo `db:verify`
+    -- (con `current_date` quedaba en el pasado y el check que espera ITEM_UNAVAILABLE fallaba).
+    ('00000000-0000-4000-8000-00000000f043', r_id, c_id, 'Pulpo a la gallega', 'Agotado hoy', 990000, now() + interval '7 days');
 
   -- Un grupo obligatorio para probar validación de opciones
   insert into public.option_groups (id, restaurant_id, menu_item_id, name, selection, required, min_select, max_select) values

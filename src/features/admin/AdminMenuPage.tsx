@@ -8,6 +8,7 @@ import { CardsSkeleton } from '@/components/ui/Skeleton'
 import { useRestaurantScope } from '@/features/staff/useRestaurantScope'
 import { useMenuAdminMutations } from '@/hooks/useAdminMutations'
 import { useAdminCategories, useAdminMenuItems } from '@/hooks/useAdminQueries'
+import { isSoldOut } from '@/lib/soldOut'
 import type { AdminCategory, AdminMenuItem } from '@/types/domain'
 import { ItemEditModal } from './ItemEditModal'
 
@@ -151,9 +152,7 @@ export default function AdminMenuPage() {
                         )}
                         <div className="min-w-0 flex-1">
                           <p className={`truncate font-medium ${item.isAvailable ? '' : 'text-stone-500'}`}>{item.name}</p>
-                          {item.soldOutUntil && new Date(item.soldOutUntil) >= new Date(new Date().toDateString()) && (
-                            <span className="text-xs font-semibold text-amber-600">Agotado hoy</span>
-                          )}
+                          {isSoldOut(item.soldOutUntil) && <span className="text-xs font-semibold text-amber-600">Agotado hoy</span>}
                         </div>
 
                         <input
@@ -179,9 +178,9 @@ export default function AdminMenuPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          icon={item.soldOutUntil ? <CheckCircle2 size={14} /> : <Ban size={14} />}
-                          onClick={() => m.setSoldOutToday.mutate({ id: item.id, soldOut: !item.soldOutUntil })}
-                          title={item.soldOutUntil ? 'Marcar disponible' : 'Marcar agotado hoy'}
+                          icon={isSoldOut(item.soldOutUntil) ? <CheckCircle2 size={14} /> : <Ban size={14} />}
+                          onClick={() => m.setSoldOutToday.mutate({ id: item.id, soldOut: !isSoldOut(item.soldOutUntil) })}
+                          title={isSoldOut(item.soldOutUntil) ? 'Marcar disponible' : 'Marcar agotado hoy'}
                         />
                         <Button variant="ghost" size="sm" icon={<Pencil size={14} />} onClick={() => setEditingItem(item)} aria-label={`Editar ${item.name}`} />
                         <Button variant="ghost" size="sm" icon={<Trash2 size={14} />} onClick={() => setDeleteTarget({ kind: 'item', id: item.id, name: item.name })} aria-label={`Eliminar ${item.name}`} />
