@@ -26,7 +26,7 @@ export function MyOrders({ hasSession, state, isPending, error, currency, billRe
 
   if (!hasSession || (state === null && !isPending)) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-6">
+      <div className="mx-auto max-w-client px-4 py-6">
         <EmptyState icon={ClipboardList} title="Todavía no pediste nada" subtitle="Cuando confirmes un pedido, vas a poder seguirlo desde acá." />
         <div className="mt-4 flex justify-center">
           <Button icon={<UtensilsCrossed size={16} />} onClick={onGoToMenu}>
@@ -39,7 +39,7 @@ export function MyOrders({ hasSession, state, isPending, error, currency, billRe
 
   if (isPending || !state) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-6">
+      <div className="mx-auto max-w-client px-4 py-6">
         {error ? <ErrorState error={error} onRetry={onRetry} /> : <CardsSkeleton count={2} />}
       </div>
     )
@@ -48,7 +48,7 @@ export function MyOrders({ hasSession, state, isPending, error, currency, billRe
   const active = state.orders.filter((o) => o.status !== 'cancelled')
 
   return (
-    <div className="mx-auto max-w-3xl space-y-4 px-4 py-4">
+    <div className="mx-auto max-w-client space-y-4 px-4 py-4">
       {state.orders.length === 0 ? (
         <EmptyState icon={ClipboardList} title="Todavía no pediste nada" subtitle="Cuando confirmes un pedido, vas a poder seguirlo desde acá." />
       ) : (

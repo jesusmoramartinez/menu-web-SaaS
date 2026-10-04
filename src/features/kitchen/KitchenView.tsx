@@ -45,23 +45,25 @@ export default function KitchenView() {
   return (
     <div className="min-h-dvh bg-stone-200">
       <header className="bg-stone-900 text-white">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 py-4">
+        <div className="mx-auto flex max-w-kds flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 py-4">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-500">
               <ChefHat size={24} aria-hidden="true" />
             </div>
             <div>
               <h1 className="text-xl font-bold whitespace-nowrap">Pantalla de Cocina</h1>
-              <p className="text-xs text-stone-400">KDS · {restaurant.name}</p>
+              <p className="text-xs text-stone-300">KDS · {restaurant.name}</p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="flex gap-5 text-right">
+          {/* flex-wrap también acá: en una tablet angosta los contadores + los controles no
+              caben en una línea y empujaban la página (scroll horizontal). */}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <div className="flex gap-4 text-right xs:gap-5">
               <Stat icon={Flame} value={inKitchen.length} label="comandas" />
               <Stat value={plates} label="platos" />
               <Stat icon={CheckCircle2} value={readyCount} label="por entregar" muted />
             </div>
-            <div className="flex gap-1 border-l border-stone-700 pl-4">
+            <div className="flex gap-1 border-stone-700 xs:border-l xs:pl-4">
               <SoundToggle enabled={sound.enabled} onToggle={sound.toggle} dark />
               {fullscreen.supported && (
                 <button
@@ -69,7 +71,7 @@ export default function KitchenView() {
                   onClick={fullscreen.toggle}
                   title={fullscreen.isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
                   aria-label={fullscreen.isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
-                  className="rounded-lg p-2 text-stone-400 transition hover:bg-stone-800 hover:text-white"
+                  className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-lg text-stone-300 transition hover:bg-stone-800 hover:text-white"
                 >
                   {fullscreen.isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
                 </button>
@@ -79,7 +81,7 @@ export default function KitchenView() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 py-5">
+      <main className="mx-auto max-w-kds px-4 py-5">
         <div className="mb-4 flex items-center gap-4 text-xs font-medium text-stone-600" aria-label="Leyenda de urgencia">
           <Legend color="bg-emerald-600" label="< 8 min" />
           <Legend color="bg-amber-500" label="8 – 15 min" />
@@ -106,11 +108,11 @@ export default function KitchenView() {
 
 function Stat({ icon: Icon, value, label, muted }: { icon?: LucideIcon; value: number; label: string; muted?: boolean }) {
   return (
-    <div className={muted ? 'text-stone-400' : ''}>
+    <div className={muted ? 'text-stone-300' : ''}>
       <p className="flex items-center justify-end gap-1 text-2xl font-extrabold leading-none tabular-nums">
         {Icon && <Icon size={18} aria-hidden="true" />} {value}
       </p>
-      <p className="text-[11px] uppercase tracking-wider text-stone-400">{label}</p>
+      <p className="text-xs uppercase tracking-wider text-stone-300">{label}</p>
     </div>
   )
 }

@@ -7,6 +7,40 @@
   --color-brand-500: #f97316;
   --color-brand-600: #ea580c;
   --color-brand-700: #c2410c;
+
+  /* Escala tipográfica: todas las utilidades text-* se multiplican por --font-scale.
+     Con el valor por defecto (1) los tamaños son los de Tailwind, sin cambios. Pisar
+     --font-scale en un contenedor agranda/achica TODO el texto que haya adentro, sin
+     tocar componente por componente: lo usan la densidad del KDS y el tamaño de letra
+     configurable por restaurante. */
+  --text-xs: calc(0.75rem * var(--font-scale));
+  --text-sm: calc(0.875rem * var(--font-scale));
+  --text-base: calc(1rem * var(--font-scale));
+  --text-lg: calc(1.125rem * var(--font-scale));
+  --text-xl: calc(1.25rem * var(--font-scale));
+  --text-2xl: calc(1.5rem * var(--font-scale));
+  --text-3xl: calc(1.875rem * var(--font-scale));
+  --text-4xl: calc(2.25rem * var(--font-scale));
+  --text-5xl: calc(3rem * var(--font-scale));
+
+  /* Breakpoint extra para celulares angostos: `sm` (640px) es demasiado tarde para decidir
+     entre ícono solo e ícono + texto en las barras de navegación. 420px es donde medimos que
+     las 4 pestañas de la demo dejan de caber. */
+  --breakpoint-xs: 26.25rem;
+
+  /* Ancho del contenido por rol (genera max-w-client, max-w-staff, …). Cada vista usa
+     el suyo en vez de un max-w-* suelto, para que cambiarlo sea un solo lugar. */
+  --container-client: 48rem; /* comensal: una carta no se lee mejor más ancha */
+  --container-admin: 64rem;
+  --container-staff: 72rem;
+  --container-kds: 80rem;
+}
+
+:root {
+  /* Multiplicador de la escala tipográfica (ver @theme). */
+  --font-scale: 1;
+  /* Objetivo mínimo de toque: 44px es la recomendación para controles primarios. */
+  --tap-min: 44px;
 }
 
 html {
@@ -15,6 +49,18 @@ html {
 
 body {
   @apply bg-stone-100 text-stone-900 antialiased;
+}
+
+@layer base {
+  /* Los campos de formulario traen un ancho intrínseco (~20 caracteres) y, como hijos de un
+     flex, se niegan a encogerse por debajo de él: con `flex-1` en un input, el botón de al
+     lado terminaba empujado fuera del viewport y aparecía scroll horizontal en pantallas
+     angostas. Con min-width:0 manda el `flex-1`. No afecta a los inputs fuera de un flex. */
+  input,
+  select,
+  textarea {
+    min-width: 0;
+  }
 }
 
 /* Ocultar scrollbar horizontal de las categorías */
@@ -48,4 +94,25 @@ body {
 }
 .animate-fade-in {
   animation: fade-in 0.2s ease-out;
+}
+
+/* Respeta "reducir movimiento" del sistema operativo: se anulan las animaciones
+   decorativas (entrada de hojas y modales, pulso) y se acortan las transiciones.
+   El spinner de carga se conserva, más lento: comunica estado, no es decoración. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-slide-up,
+  .animate-fade-in,
+  .animate-pulse {
+    animation: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+  }
+
+  .animate-spin {
+    animation-duration: 1.5s;
+  }
 }

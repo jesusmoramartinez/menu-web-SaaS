@@ -25,12 +25,12 @@ export default function ClientLayout({ slug: fixedSlug }: ClientLayoutProps) {
     return (
       <div className="min-h-dvh" aria-busy="true">
         <div className="bg-stone-300 px-4 pt-5 pb-4">
-          <div className="mx-auto max-w-3xl space-y-3">
+          <div className="mx-auto max-w-client space-y-3">
             <Skeleton className="h-12 w-2/3 bg-stone-400/40" />
             <Skeleton className="h-10 w-full bg-stone-400/40" />
           </div>
         </div>
-        <div className="mx-auto max-w-3xl px-4 py-4">
+        <div className="mx-auto max-w-client px-4 py-4">
           <MenuSkeleton />
         </div>
       </div>

@@ -22,7 +22,7 @@ export function ClientHeader({
 }: ClientHeaderProps) {
   return (
     <header className="bg-gradient-to-br from-brand-600 to-brand-700 text-white">
-      <div className="mx-auto max-w-3xl px-4 pt-5 pb-4">
+      <div className="mx-auto max-w-client px-4 pt-5 pb-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             {restaurant.logoUrl ? (

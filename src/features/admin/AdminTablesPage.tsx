@@ -62,7 +62,7 @@ export default function AdminTablesPage() {
           {sectorList.map((s) => (
             <span key={s.id} className="flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-sm ring-1 ring-stone-200">
               {s.name}
-              <button type="button" onClick={() => m.deleteSector.mutate(s.id)} className="text-stone-400 hover:text-red-600" aria-label={`Eliminar sector ${s.name}`}>
+              <button type="button" onClick={() => m.deleteSector.mutate(s.id)} className="text-stone-500 hover:text-red-600" aria-label={`Eliminar sector ${s.name}`}>
                 <Trash2 size={13} />
               </button>
             </span>
@@ -95,7 +95,7 @@ export default function AdminTablesPage() {
                 <div className="flex items-center justify-between">
                   <p className="font-bold">
                     Mesa {t.label ?? t.number}
-                    {!t.isActive && <span className="ml-2 text-xs font-normal text-stone-400">(inactiva)</span>}
+                    {!t.isActive && <span className="ml-2 text-xs font-normal text-stone-500">(inactiva)</span>}
                   </p>
                   <Button
                     variant="ghost"

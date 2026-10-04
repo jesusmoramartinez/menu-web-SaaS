@@ -14,7 +14,8 @@
     "db:push": "supabase db push --linked --include-seed",
     "db:types": "supabase gen types typescript --linked --schema public > src/types/database.ts",
     "db:verify": "node scripts/verify-rls.mjs",
-    "db:verify:staff": "node scripts/verify-staff-ops.mjs"
+    "db:verify:staff": "node scripts/verify-staff-ops.mjs",
+    "check:overflow": "node scripts/check-overflow.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",

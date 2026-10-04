@@ -41,7 +41,7 @@ export function DemoBar() {
 
   return (
     <div className="sticky top-0 z-40 bg-stone-900 text-white shadow-md">
-      <div className="mx-auto flex max-w-6xl items-center gap-2 px-3 py-2">
+      <div className="mx-auto flex max-w-staff items-center gap-2 px-3 py-2">
         <span className="hidden text-xs font-semibold uppercase tracking-wider text-stone-400 sm:block">Demo</span>
 
         <nav className="flex flex-1 gap-1 rounded-xl bg-stone-800 p-1" aria-label="Vistas de la demo">
@@ -51,13 +51,18 @@ export function DemoBar() {
               <NavLink
                 key={to}
                 to={to}
+                title={label}
+                aria-label={label}
                 className={({ isActive }) =>
-                  `relative flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium transition
+                  `relative flex min-w-0 flex-auto items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium transition
                   ${isActive ? 'bg-brand-500 text-white shadow' : 'text-stone-300 hover:bg-stone-700'}`
                 }
               >
                 <Icon size={16} aria-hidden="true" />
-                <span>{label}</span>
+                {/* Las 4 etiquetas + el botón de reinicio no caben por debajo de 412px y
+                    empujaban la página entera (scroll horizontal). Debajo de `sm` quedan
+                    sólo los íconos; el nombre sigue disponible por title/aria-label. */}
+                <span className="hidden truncate xs:inline">{label}</span>
                 {count > 0 && (
                   <span
                     className="absolute -top-1.5 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[11px] font-bold text-white ring-2 ring-stone-900"
@@ -77,7 +82,7 @@ export function DemoBar() {
           disabled={reset.isPending}
           title="Reiniciar demo"
           aria-label="Reiniciar demo"
-          className="rounded-lg p-2 text-stone-400 transition hover:bg-stone-800 hover:text-white disabled:opacity-50"
+          className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-lg text-stone-300 transition hover:bg-stone-800 hover:text-white disabled:opacity-50"
         >
           <RotateCcw size={16} className={reset.isPending ? 'animate-spin' : ''} />
         </button>

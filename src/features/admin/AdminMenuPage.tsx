@@ -68,17 +68,17 @@ export default function AdminMenuPage() {
               return (
                 <div key={c.id} className="flex items-center gap-2 rounded-xl bg-white p-2.5 ring-1 ring-stone-200/70">
                   <div className="flex flex-col">
-                    <button type="button" disabled={idx === 0} onClick={() => moveCategory(c, -1)} className="text-stone-400 hover:text-stone-700 disabled:opacity-20" aria-label={`Subir ${c.name}`}>
+                    <button type="button" disabled={idx === 0} onClick={() => moveCategory(c, -1)} className="text-stone-500 hover:text-stone-700 disabled:opacity-20" aria-label={`Subir ${c.name}`}>
                       ▲
                     </button>
-                    <button type="button" disabled={idx === cats.length - 1} onClick={() => moveCategory(c, 1)} className="text-stone-400 hover:text-stone-700 disabled:opacity-20" aria-label={`Bajar ${c.name}`}>
+                    <button type="button" disabled={idx === cats.length - 1} onClick={() => moveCategory(c, 1)} className="text-stone-500 hover:text-stone-700 disabled:opacity-20" aria-label={`Bajar ${c.name}`}>
                       ▼
                     </button>
                   </div>
-                  <span className={`flex-1 font-medium ${c.isActive ? '' : 'text-stone-400 line-through'}`}>
+                  <span className={`flex-1 font-medium ${c.isActive ? '' : 'text-stone-500 line-through'}`}>
                     {c.emoji ? `${c.emoji} ` : ''}
                     {c.name}
-                    {itemCount > 0 && <span className="ml-1 text-xs font-normal text-stone-400">({itemCount})</span>}
+                    {itemCount > 0 && <span className="ml-1 text-xs font-normal text-stone-500">({itemCount})</span>}
                   </span>
                   <Button
                     variant="ghost"
@@ -150,7 +150,7 @@ export default function AdminMenuPage() {
                           <div className="h-11 w-11 shrink-0 rounded-lg bg-stone-100" />
                         )}
                         <div className="min-w-0 flex-1">
-                          <p className={`truncate font-medium ${item.isAvailable ? '' : 'text-stone-400'}`}>{item.name}</p>
+                          <p className={`truncate font-medium ${item.isAvailable ? '' : 'text-stone-500'}`}>{item.name}</p>
                           {item.soldOutUntil && new Date(item.soldOutUntil) >= new Date(new Date().toDateString()) && (
                             <span className="text-xs font-semibold text-amber-600">Agotado hoy</span>
                           )}

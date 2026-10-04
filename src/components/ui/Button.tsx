@@ -21,10 +21,15 @@ const VARIANTS: Record<ButtonVariant, string> = {
   dark: 'bg-stone-900 text-white hover:bg-stone-800',
 }
 
+/**
+ * `min-h` explícito además del padding: sin él, `sm` quedaba en ~30px y `md` en ~38px, por
+ * debajo de los 44px recomendados para un control que se toca con el dedo. `sm` se reserva
+ * para controles secundarios densos (36px); las acciones principales usan `md`.
+ */
 const SIZES: Record<ButtonSize, string> = {
-  sm: 'px-3 py-1.5 text-sm rounded-lg',
-  md: 'px-4 py-2.5 text-sm rounded-xl',
-  lg: 'px-5 py-3 text-base rounded-xl',
+  sm: 'min-h-9 px-3 py-1.5 text-sm rounded-lg',
+  md: 'min-h-11 px-4 py-2.5 text-sm rounded-xl',
+  lg: 'min-h-12 px-5 py-3 text-base rounded-xl',
 }
 
 export function Button({

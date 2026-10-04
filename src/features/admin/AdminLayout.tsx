@@ -15,11 +15,11 @@ export default function AdminLayout() {
   return (
     <div className="min-h-dvh bg-stone-50">
       <header className="border-b border-stone-200 bg-white">
-        <div className="mx-auto max-w-5xl px-4 py-4">
+        <div className="mx-auto max-w-admin px-4 py-4">
           <h1 className="text-xl font-bold">Administración</h1>
           <p className="text-sm text-stone-500">{restaurant.name}</p>
         </div>
-        <nav className="mx-auto max-w-5xl px-4 pb-3" aria-label="Secciones de administración">
+        <nav className="mx-auto max-w-admin px-4 pb-3" aria-label="Secciones de administración">
           <div className="no-scrollbar flex gap-1 overflow-x-auto rounded-xl bg-stone-200/70 p-1">
             {ADMIN_NAV.map(({ to, label, icon: Icon }) => (
               <NavLink
@@ -38,7 +38,7 @@ export default function AdminLayout() {
         </nav>
       </header>
 
-      <main className="mx-auto max-w-5xl px-4 py-5">
+      <main className="mx-auto max-w-admin px-4 py-5">
         <Suspense fallback={<PageSpinner />}>
           <Outlet />
         </Suspense>

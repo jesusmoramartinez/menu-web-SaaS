@@ -11,6 +11,13 @@ const ROLE_LABEL: Record<Staff['role'], string> = {
   kitchen: 'Cocina',
 }
 
+/** Switch de vistas que ven owner/admin. */
+const VIEWS = [
+  { to: '/mozo', label: 'Mozo', Icon: UserRound },
+  { to: '/cocina', label: 'Cocina', Icon: ChefHat },
+  { to: '/admin', label: 'Admin', Icon: LayoutDashboard },
+]
+
 /** Barra superior de las rutas reales de staff: marca del restaurante, navegación entre pantallas + cerrar sesión. */
 export function StaffTopBar({ staff, restaurant }: { staff: Staff; restaurant: Restaurant }) {
   const { signOut } = useAuth()
@@ -19,7 +26,7 @@ export function StaffTopBar({ staff, restaurant }: { staff: Staff; restaurant: R
 
   return (
     <div className="sticky top-0 z-40 bg-stone-900 text-white shadow-md">
-      <div className="mx-auto flex max-w-6xl items-center gap-3 px-3 py-2">
+      <div className="mx-auto flex max-w-staff items-center gap-3 px-3 py-2">
         <div className="hidden min-w-0 items-center gap-2 sm:flex">
           {restaurant.logoUrl ? (
             <img src={restaurant.logoUrl} alt="" className="h-8 w-8 shrink-0 rounded-lg bg-white/90 object-cover" />
@@ -32,31 +39,23 @@ export function StaffTopBar({ staff, restaurant }: { staff: Staff; restaurant: R
         </div>
 
         {canSeeBoth && (
-          <nav className="flex gap-1 rounded-xl bg-stone-800 p-1" aria-label="Vistas">
-            <NavLink
-              to="/mozo"
-              className={({ isActive }) =>
-                `flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium transition ${isActive ? 'bg-brand-500 text-white' : 'text-stone-300 hover:bg-stone-700'}`
-              }
-            >
-              <UserRound size={15} aria-hidden="true" /> Mozo
-            </NavLink>
-            <NavLink
-              to="/cocina"
-              className={({ isActive }) =>
-                `flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium transition ${isActive ? 'bg-brand-500 text-white' : 'text-stone-300 hover:bg-stone-700'}`
-              }
-            >
-              <ChefHat size={15} aria-hidden="true" /> Cocina
-            </NavLink>
-            <NavLink
-              to="/admin"
-              className={({ isActive }) =>
-                `flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium transition ${isActive ? 'bg-brand-500 text-white' : 'text-stone-300 hover:bg-stone-700'}`
-              }
-            >
-              <LayoutDashboard size={15} aria-hidden="true" /> Admin
-            </NavLink>
+          <nav className="flex shrink-0 gap-1 rounded-xl bg-stone-800 p-1" aria-label="Vistas">
+            {VIEWS.map(({ to, label, Icon }) => (
+              <NavLink
+                key={to}
+                to={to}
+                title={label}
+                aria-label={label}
+                className={({ isActive }) =>
+                  `flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium transition ${isActive ? 'bg-brand-500 text-white' : 'text-stone-300 hover:bg-stone-700'}`
+                }
+              >
+                <Icon size={15} aria-hidden="true" />
+                {/* Debajo de 420px las tres etiquetas + el nombre + cerrar sesión no caben y
+                    empujarían la página. Quedan los íconos; el nombre va en title/aria-label. */}
+                <span className="hidden xs:inline">{label}</span>
+              </NavLink>
+            ))}
           </nav>
         )}
 
@@ -70,7 +69,7 @@ export function StaffTopBar({ staff, restaurant }: { staff: Staff; restaurant: R
           disabled={logout.isPending}
           title="Cerrar sesión"
           aria-label="Cerrar sesión"
-          className="rounded-lg p-2 text-stone-400 transition hover:bg-stone-800 hover:text-white disabled:opacity-50"
+          className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-lg text-stone-300 transition hover:bg-stone-800 hover:text-white disabled:opacity-50"
         >
           <LogOut size={16} />
         </button>

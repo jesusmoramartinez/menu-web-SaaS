@@ -61,6 +61,9 @@ npm run db:push         # supabase db push --linked --include-seed  (migraciones
 npm run db:types        # regenera src/types/database.ts desde el proyecto (correr tras cada migración)
 npm run db:verify       # node scripts/verify-rls.mjs — 21 checks de RLS/RPC con la anon key
 npm run db:verify:staff # node scripts/verify-staff-ops.mjs — 7 checks de close_table_session y aislamiento por tenant
+
+npm run check:overflow  # node scripts/check-overflow.mjs — scroll horizontal en 7 rutas × 5 anchos
+                        # (necesita `npm run dev` levantado y un Chromium instalado)
 ```
 
 > **Storage** (Fase 5): bucket público `restaurant-media` (`supabase/migrations/20260918000100_storage_media.sql`),
@@ -278,7 +281,13 @@ Cualquier función de autorización nueva (booleana, usada en `if not ... then r
 - **Un archivo = componentes o helpers, no ambos** (regla fast-refresh de oxlint). Hooks en `hooks/`, contextos en `*-context.ts`, helpers puros en `.ts`.
 - **Datos:** componentes → hooks (`useQueries`, `useStaffMutations`) → `services/` → supabase. Nunca llamar a `supabase` desde un componente. Los tests mockean `@/services/*` (fixtures en `src/test/fixtures.ts`).
 - **Sin `setState` dentro de efectos** para sincronizar props (regla `react/set-state-in-effect`): derivar en render.
-- **Mobile-first.** Todo debe funcionar a 360px. Botones con `whitespace-nowrap`; footers con `flex-wrap`.
+- **Mobile-first, no mobile-only.** Todo debe funcionar a 360px. Botones con `whitespace-nowrap`; footers con `flex-wrap`. Todo componente nuevo declara qué hace de `md` en adelante; si la respuesta es "nada", que sea decisión escrita y no un olvido.
+- **Objetivos de toque:** mínimo 44×44 px en controles primarios (`Button` size `md`/`lg`, botones de ícono con `min-h-11 min-w-11`), 36 px en secundarios densos (`sm`). Nunca menos de 24.
+- **Contraste:** `text-stone-400` **no se usa para texto sobre fondo claro** (≈2.8:1, no llega a 4.5:1) — sólo decorativo, o sobre fondo oscuro (`stone-800/900`, donde da ~7:1). Texto secundario: `stone-500` sobre blanco, `stone-600` sobre `stone-50/100`. En cocina (se lee a 1–2 m) el secundario sobre oscuro es `stone-300`.
+- **Áreas seguras:** cualquier cosa fija abajo usa `env(safe-area-inset-bottom)`. `Modal`/`Sheet` ya lo resuelven en el pie (y en el cuerpo si no hay pie): no repetirlo en cada hoja.
+- **Animaciones:** toda animación nueva se neutraliza bajo `prefers-reduced-motion` (el bloque está al final de `index.css`); el `animate-spin` de carga se conserva porque comunica estado.
+- **Tamaños de letra y anchos:** de los tokens de `index.css` (`--text-*` multiplicados por `--font-scale`; `max-w-client/admin/staff/kds`). Nada de `text-[Npx]` ni `max-w-*` suelto salvo caso justificado por escrito. Hay un breakpoint `xs` (420px) para decidir ícono-solo vs. ícono+texto en barras de navegación; `sm` (640px) llega demasiado tarde para eso.
+- **Nunca scroll horizontal.** Es el bug que más rompe la vista en celulares (barra blanca al costado / web cortada) y **no se detecta leyendo el código**: depende del ancho intrínseco del texto y de los inputs. Correr `npm run check:overflow` (con `npm run dev` levantado) ante cualquier cambio de layout. Las dos causas que ya mordieron: un `flex-1` reparte ancho **igual** entre hermanos y corta el más largo (usar `flex-auto`, que reparte desde el contenido), y un hijo flex sin `min-w-0` no se encoge por debajo de su contenido. Los inputs ya tienen `min-width: 0` global en `index.css`. **No** se arregla con `overflow-x: hidden` en `body`: eso rompería los `sticky` de las barras.
 - **Sin librerías de UI.** Diálogos siempre sobre `Modal`/`Sheet` (accesibilidad resuelta ahí). Confirmaciones con `ConfirmDialog`, nunca `window.confirm`.
 - **Botones:** usar `<Button>` salvo controles muy específicos (chips, barra flotante, tabs). Nunca sobreescribir el color de una variante con `className`: crear variante.
 - **Colores:** `brand-*` (naranja) para marca. Semánticos: emerald = OK/enviar, amber = pendiente, red = urgente/alerta, sky = cuenta/en cocina, yellow = notas de cocina.

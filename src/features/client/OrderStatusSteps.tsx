@@ -33,7 +33,7 @@ export function OrderStatusSteps({ status }: { status: OrderStatus }) {
               <div className="flex flex-col items-center">
                 <span
                   className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold ring-2
-                    ${done ? 'bg-emerald-600 text-white ring-emerald-600' : active ? 'bg-brand-500 text-white ring-brand-500 animate-pulse' : 'bg-white text-stone-400 ring-stone-300'}`}
+                    ${done ? 'bg-emerald-600 text-white ring-emerald-600' : active ? 'bg-brand-500 text-white ring-brand-500 animate-pulse' : 'bg-white text-stone-500 ring-stone-300'}`}
                   aria-current={active ? 'step' : undefined}
                 >
                   {done ? <Check size={14} aria-hidden="true" /> : i + 1}
