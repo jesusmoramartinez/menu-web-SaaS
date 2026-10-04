@@ -133,6 +133,44 @@ await check('place_order rechaza un plato agotado hoy', async () => {
   assert(err?.includes('ITEM_UNAVAILABLE'), `esperaba ITEM_UNAVAILABLE, vino ${err}`)
 })
 
+/**
+ * El check de arriba usa un valor fijo del seed. Éste ejercita el camino completo en vivo
+ * sobre el tenant demo (donde anon puede administrar): marcar agotado con la RPC, que
+ * calcula el instante con la zona horaria del restaurante, y confirmar que place_order lo
+ * rechaza. Es el que prueba el fix de la migración 20261004000100: antes, "agotado hoy" se
+ * guardaba como fecha UTC y dejaba de valer a las 21:00 hora argentina, en plena cena.
+ */
+await check('set_item_sold_out marca hasta un instante futuro y place_order lo respeta', async () => {
+  const until = await rpc('set_item_sold_out', { p_menu_item_id: DEMO_PIZZA_MUZZA, p_sold_out: true })
+  try {
+    assert(until !== null, 'esperaba un instante, vino null')
+    const ms = new Date(until).getTime() - Date.now()
+    assert(ms > 0, `el corte quedó en el pasado (${until})`)
+    assert(ms < 32 * 60 * 60 * 1000, `el corte quedó demasiado lejos (${until})`)
+
+    const err = await rpcError('place_order', {
+      p_token: 'demo-mesa-01',
+      p_items: [{ menu_item_id: DEMO_PIZZA_MUZZA, qty: 1 }],
+    })
+    assert(err?.includes('ITEM_UNAVAILABLE'), `esperaba ITEM_UNAVAILABLE, vino ${err}`)
+  } finally {
+    await rpc('set_item_sold_out', { p_menu_item_id: DEMO_PIZZA_MUZZA, p_sold_out: false })
+  }
+
+  // Al desmarcarlo deja de estar agotado. Puede seguir fallando por otra razón (este plato
+  // tiene un grupo obligatorio), así que lo que importa es que YA NO sea ITEM_UNAVAILABLE.
+  const ok = await rpcError('place_order', {
+    p_token: 'demo-mesa-01',
+    p_items: [{ menu_item_id: DEMO_PIZZA_MUZZA, qty: 1 }],
+  })
+  assert(!ok?.includes('ITEM_UNAVAILABLE'), `al desmarcarlo ya no debería estar agotado, vino ${ok}`)
+})
+
+await check('set_item_sold_out NO deja marcar un plato de un tenant privado', async () => {
+  const err = await rpcError('set_item_sold_out', { p_menu_item_id: BAR_PULPO_AGOTADO, p_sold_out: false })
+  assert(err?.includes('NOT_AUTHORIZED'), `esperaba NOT_AUTHORIZED, vino ${err}`)
+})
+
 await check('place_order exige el grupo obligatorio (Tamaño)', async () => {
   const err = await rpcError('place_order', {
     p_token: 'prueba-mesa-01',

@@ -400,6 +400,7 @@ export type Database = {
           slug: string
           tagline: string | null
           theme: Json
+          timezone: string
         }
         Insert: {
           created_at?: string
@@ -412,6 +413,7 @@ export type Database = {
           slug: string
           tagline?: string | null
           theme?: Json
+          timezone?: string
         }
         Update: {
           created_at?: string
@@ -424,6 +426,7 @@ export type Database = {
           slug?: string
           tagline?: string | null
           theme?: Json
+          timezone?: string
         }
         Relationships: []
       }
@@ -715,6 +718,7 @@ export type Database = {
       }
       get_session_state: { Args: { p_session_id: string }; Returns: Json }
       get_table_by_token: { Args: { p_token: string }; Returns: Json }
+      get_tables_overview: { Args: { p_restaurant_id: string }; Returns: Json }
       is_manager: { Args: never; Returns: boolean }
       join_restaurant: {
         Args: { p_code: string; p_display_name?: string }
@@ -727,6 +731,10 @@ export type Database = {
       }
       reset_demo: { Args: never; Returns: undefined }
       seed_demo: { Args: never; Returns: undefined }
+      set_item_sold_out: {
+        Args: { p_menu_item_id: string; p_sold_out: boolean }
+        Returns: string
+      }
     }
     Enums: {
       alert_type: "waiter" | "bill"

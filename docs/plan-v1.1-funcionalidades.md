@@ -28,7 +28,21 @@ Los bloques 1 y 2 son los que hay que tener **antes de cobrarle a un cliente**. 
 
 ---
 
-## Bloque 0 — Bugs encontrados al planificar
+## Bloque 0 — Bugs encontrados al planificar ✅ 0.1 y 0.3 IMPLEMENTADOS (2026-10-04) · 0.2 pendiente de decisión
+
+> **Estado:**
+> - **0.1 (zona horaria) hecho.** `restaurants.timezone` + `menu_items.sold_out_until` pasó de `date` a
+>   `timestamptz` con backfill, RPC `set_item_sold_out` (calcula el próximo 06:00 local en el servidor),
+>   `place_order` compara contra `now()`, helper puro `lib/soldOut.ts` con tests (incluido el caso 20:59/21:01
+>   ART que antes fallaba) y dos checks nuevos en `db:verify`. Apareció un **cuarto** lugar con el mismo bug que
+>   no estaba en el diagnóstico: el badge "Agotado hoy" de `AdminMenuPage`.
+> - **0.3 (consulta de Mesas) hecho.** RPC `get_tables_overview`: una fila por mesa calculada en la base, en
+>   lugar de bajar todos los pedidos no cancelados del restaurante cada 15 s.
+> - **0.2 (`locale`) pendiente:** necesita decidir si se usa o se saca (decisión 2 del resumen).
+>
+> **Hallazgo lateral:** `supabase/seed.sql` **no se aplica** con `db:push` contra un proyecto remoto — el CLI sólo
+> registra el hash. El tenant "Bar de Prueba" de dev quedó congelado desde el 2026-09-17, así que al cambiar el
+> seed hay que replicar el cambio a mano en el SQL Editor de dev. Documentado en `CLAUDE.md` §2.
 
 Los tres salieron de leer el código para armar este plan, no del backlog. Ninguno tiene test que los cubra hoy.
 
